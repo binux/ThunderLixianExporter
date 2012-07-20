@@ -10,7 +10,9 @@ Usage
 
 1. 快速体验
 > 在lixian.xunlei.com页面输入以下javascript代码
+> 
 > `javascript:(function(){var script = document.createElement('script'); script.src = "http://binux.github.com/ThunderLixianExporter/demo/ThunderLixianExporter.js"; script.id = "TLE_script"; document.body.appendChild(script);})()`
+> 
 > **注意:  chrome等浏览器为了安全原因会将复制入地址栏的 `javascript:` 去除，请手动补全。**
 
 2. 安装Userscript
