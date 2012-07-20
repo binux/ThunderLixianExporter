@@ -195,7 +195,7 @@ var TLE = TLE || {};
 
 
   function init() {
-    $("head").append('<link type="text/css" rel="stylesheet" href="http://127.0.0.1:8000/ThunderLixianExporter.css"/>');
+    $("head").append('<link type="text/css" rel="stylesheet" href="'+$("#TLE_script").attr("src").replace(/.js$/, ".css")+'"/>');
     $("body").append('<div id="TLE_text_pop" class="pop_rwbox" style="display: none;margin: 0;"></div>');
     $("body").append('<textarea id="TLE_text_tpl" style="display: none;"></textarea>');
     $("#TLE_text_tpl").text('<div class="p_rw_pop">'

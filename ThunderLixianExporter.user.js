@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name       ThunderLixianExporter
 // @namespace  http://binux.me/
-// @version    0.1
+// @version    0.2
 // @description  export thunder lixian url to aria2/wget
 // @match      http://dynamic.cloud.vip.xunlei.com/user_task?*
 // @run-at document-end
@@ -9,5 +9,6 @@
 // ==/UserScript==
 
 var script = document.createElement('script');
-script.src = "https://raw.github.com/binux/ThunderLixianExporter/master/ThunderLixianExporter.js"
+script.src = "https://raw.github.com/binux/ThunderLixianExporter/master/ThunderLixianExporter.js";
+script.id = "TLE_script";
 document.body.appendChild(script);
