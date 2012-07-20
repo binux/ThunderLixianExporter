@@ -9,5 +9,5 @@
 // ==/UserScript==
 
 var script = document.createElement('script');
-script.src = "http://127.0.0.1:8000/ThunderLixianExporter.js"
+script.src = "https://raw.github.com/binux/ThunderLixianExporter/master/ThunderLixianExporter.js"
 document.body.appendChild(script);
