@@ -1,0 +1,1 @@
+javascript:(function(){var script = document.createElement('script'); script.src = "http://binux.github.com/ThunderLixianExporter/demo/ThunderLixianExporter.js"; script.id = "TLE_script"; document.body.appendChild(script);})()

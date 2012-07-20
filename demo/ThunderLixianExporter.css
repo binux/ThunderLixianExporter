@@ -1,0 +1,17 @@
+/* vim: set et sw=2 ts=2 sts=2 ff=unix fenc=utf8: */
+/* Author: Binux<huangkuan@duokan.com> */
+/*         http://binux.me */
+/* Created on Fri 20 Jul 2012 11:49:20 AM CST */
+
+.TLE_get_btnbox {position:relative; float:left; z-index:11}
+.TLE_getbtn {position: absolute; top:24px; left:0; border:1px #6FB2F3 solid; background:#fff; width:115px;-moz-border-radius:3px;-webkit-border-radius:3px;border-radius:3px;-moz-box-shadow:2px 2px 3px #ddd;-webkit-box-shadow:2px 2px 3px #ddd;}
+.TLE_getbtn a {display:block; height:22px; line-height:22px; padding-left:18px}
+.TLE_getbtn a:hover {background:#E4EFF9 url(http://cloud.vip.xunlei.com/190/img/ic_dianbo.png) no-repeat 8px 8px; *background-position:8px 6px ; text-decoration:none}
+.TLE_get_btnbox .TLE_getlink {width:98px; height:22px; float:left; line-height:21px;*line-height:24px;display:block;color:#000000; margin-right:5px; overflow:hidden;background:url(http://cloud.vip.xunlei.com/190/img/bg_btnall.png?197) no-repeat  0 -390px}
+.TLE_get_btnbox .TLE_link_gettxt {float:left; display: inline ; width:53px; text-align:center; padding-left:24px; color:#000}
+.TLE_get_btnbox .TLE_link_gettxt:hover{ text-decoration:none}
+.rwbox .rwset .TLE_link_getic {float:left; display:block; width:20px;height:22px;}
+.TLE_hiden { display: none; }
+
+.rwbtn.ic_redownloca { display: none !important; }
+.menu { width: 630px !important; }
