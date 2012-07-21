@@ -5,6 +5,75 @@
 
 var TLE = TLE || {};
 
+TLE.exporter = {
+  '复制链接': function(todown) {
+    console.log(todown);
+    var str = '<ul style="max-height: 300px; overflow-y: scroll; overflow-x: hidden;">';
+    $.each(todown.tasklist, function(n, task) {
+      $.each(task.filelist, function(l, file) {
+        if (file.downurl) str += '<li><a href="'+file.downurl+'" target="_blank">'+file.title+'</a></li>';
+      });
+    });
+    str += "</ul>";
+    $("#TLE_text_pop").tpl("TLE_text_tpl", {'title': '复制选中的链接', 'content': str}).show().pop({
+      onHide: function() { $(document.body).click(); },
+    });
+  },
+  'Aria2': function(todown) {
+    console.log(todown);
+    var str = "";
+    $.each(todown.tasklist, function(n, task) {
+      $.each(task.filelist, function(l, file) {
+        if (file.downurl) str += "aria2c -c -s10 -x10 --out "+TLE.escape_command(file.title)+" --header 'Cookie: gdriveid="+todown.gdriveid+";' '"+file.downurl+"'\n"; 
+      });
+    });
+    TLE.text_pop("aria2 download command", str);
+  },
+  'wget': function(todown) {
+    console.log(todown);
+    var str = "";
+    $.each(todown.tasklist, function(n, task) {
+      $.each(task.filelist, function(l, file) {
+        if (file.downurl) str += "wget -c -O "+TLE.escape_command(file.title)+" --header 'Cookie: gdriveid="+todown.gdriveid+";' '"+file.downurl+"'\n";
+      });
+    });
+    TLE.text_pop("wget download command", str);
+  },
+  'Aria2导出': function(todown) {
+    console.log(todown);
+    var str = "";
+    $.each(todown.tasklist, function(n, task) {
+      $.each(task.filelist, function(l, file) {
+        if (!file.downurl) return;
+        str += file.downurl+'\r\n  out='+file.title+'\r\n  header=Cookie: gdriveid='+todown.gdriveid+'\r\n  continue=true\r\n  max-connection-per-server=5\r\n  split=10\r\n  parameterized-uri=true\r\n\r\n';
+      });
+    });
+    TLE.window_pop("Aria2导出文件下载", str, "aria2.down");
+  },
+  'IDM导出': function(todown) {
+    console.log(todown);
+    var str = "";
+    $.each(todown.tasklist, function(n, task) {
+      $.each(task.filelist, function(l, file) {
+        if (!file.downurl) return;
+        str += '<\r\n'+file.downurl+'\r\ncookie: gdriveid='+todown.gdriveid+'\r\n>\r\n'
+      });
+    });
+    TLE.window_pop("IDM导出文件下载", str, "idm.ef2");
+  },
+  'Orbit导出': function(todown) {
+    console.log(todown);
+    var str = "";
+    $.each(todown.tasklist, function(n, task) {
+      $.each(task.filelist, function(l, file) {
+        if (!file.downurl) return;
+        str += file.downurl+'|'+file.title.replace("|", "_")+'||gdriveid='+todown.gdriveid+'\r\n'
+      });
+    });
+    TLE.window_pop("Orbit导出文件下载", str, "orbit.olt");
+  },
+};
+
 (function(TLE) {
   function get_taskinfo(p) {
     var taskid = p.attr("taskid");
@@ -85,7 +154,7 @@ var TLE = TLE || {};
     };
   };
 
-  TLE.batch_down = function(_do) {
+  TLE.batch_down = function(_this, _do) {
     var ck = document.getElementsByName("ck");
     var bt_task_list = [];
     var normal_task_list = [];
@@ -134,7 +203,7 @@ var TLE = TLE || {};
     };
   };
 
-  TLE.bt_down = function(_do) {
+  TLE.bt_down = function(_this, _do) {
     var ck = document.getElementsByName("bt_list_ck");
     var files = [];
     $.each(ck, function(n, e) {
@@ -172,6 +241,20 @@ var TLE = TLE || {};
   };
 
   TLE.text_pop = function(title, content) {
+    content = $('<div></div>').text(content).html()
+    content = '<textarea style="width: 100%; height: 260px;">'+content+'</textarea>'
+    $("#TLE_text_pop").tpl("TLE_text_tpl", {'title': title, 'content': content}).show().pop({
+      onHide: function() { $(document.body).click(); },
+    });
+  };
+  TLE.window_pop = function(title, content, filename) {
+    var url = "data:text/html;charset=utf-8,"+encodeURIComponent(content);
+    var content = '<div style="width: 100%; height: 100px;">'
+                    +'<div style="padding: 30px 0 0 30%;">'
+                      +'<a href="'+url+'" target="_blank" title="右键另存为" class="TLE_down_btn" download="'+filename+'"><span><em class="TLE_icdwlocal">导出文件</em></span></a>'
+                      +(isChrome ? '' : '(右键另存为'+filename+')')
+                    +'</div>'
+                 +'</div>'
     $("#TLE_text_pop").tpl("TLE_text_tpl", {'title': title, 'content': content}).show().pop({
       onHide: function() { $(document.body).click(); },
     });
@@ -194,8 +277,35 @@ var TLE = TLE || {};
   };
 
 
+  function exporter_anchors(type) {
+    var str = '';
+    console.log("asdf");
+    $.each(TLE.exporter, function(n, f) {
+      str+=('<a href="#" title="'+n+'" onmouseover="this.className=\'sel_on\'" onmouseout="this.className=\'\'" onclick="'+type+'(this, TLE.exporter[\''+n+'\'])">'+n+'</a>');
+    });
+    return str;
+  }
   function init() {
-    $("head").append('<link type="text/css" rel="stylesheet" href="'+$("#TLE_script").attr("src").replace(/.js$/, ".css")+'"/>');
+    $("head").append('<style>'
+          +'.TLE_get_btnbox {position:relative; float:left; z-index:11}'
+          +'.TLE_getbtn {position: absolute; top:24px; left:0; border:1px #6FB2F3 solid; background:#fff; width:115px;-moz-border-radius:3px;-webkit-border-radius:3px;border-radius:3px;-moz-box-shadow:2px 2px 3px #ddd;-webkit-box-shadow:2px 2px 3px #ddd;}'
+          +'.TLE_getbtn a {display:block; height:22px; line-height:22px; padding-left:18px}'
+          +'.TLE_getbtn a:hover {background:#E4EFF9 url(http://cloud.vip.xunlei.com/190/img/ic_dianbo.png) no-repeat 8px 8px; *background-position:8px 6px ; text-decoration:none}'
+          +'.TLE_get_btnbox .TLE_getlink {width:98px; height:22px; float:left; line-height:21px;*line-height:24px;display:block;color:#000000; margin-right:5px; overflow:hidden;background:url(http://cloud.vip.xunlei.com/190/img/bg_btnall.png?197) no-repeat  0 -390px}'
+          +'.TLE_get_btnbox .TLE_link_gettxt {float:left; display: inline ; width:53px; text-align:center; padding-left:24px; color:#000}'
+          +'.TLE_get_btnbox .TLE_link_gettxt:hover {text-decoration:none}'
+          +'.rwbox .rwset .TLE_link_getic {float:left; display:block; width:20px;height:22px;}'
+          +'.TLE_hiden {display: none; }'
+          +'.TLE_down_btn {background: url(http://cloud.vip.xunlei.com/190/img/lx/bg_rpx.png) no-repeat 0 999em; display: block; float: left; margin: 0 1px; overflow: hidden; color: white; height: 28px; padding-left: 8px; background-position: 0 -60px; text-decoration: none; }'
+          +'.TLE_down_btn span {background: url(http://cloud.vip.xunlei.com/190/img/lx/bg_rpx.png) no-repeat 0 999em; display: block; float: left; height: 28px; line-height: 27px; cursor: pointer; padding-right: 8px; background-position:100% -60px; }'
+          +'.TLE_down_btn:active {background-position:0 -28px; }'
+          +'.TLE_down_btn:active span {background-position:right -28px;}'
+          +'.TLE_icdwlocal { padding-left: 20px; display: inline-block; background: url(http://cloud.vip.xunlei.com/190/img/lx/bg_menu.png) no-repeat 0 999em; background-position: 0 -108px; }'
+
+
+          +'.rwbtn.ic_redownloca { display: none !important; }'
+          +'.menu { width: 630px !important; }'
+        +'</style>');
     $("body").append('<div id="TLE_text_pop" class="pop_rwbox" style="display: none;margin: 0;"></div>');
     $("body").append('<textarea id="TLE_text_tpl" style="display: none;"></textarea>');
     $("#TLE_text_tpl").text('<div class="p_rw_pop">'
@@ -203,7 +313,7 @@ var TLE = TLE || {};
                               +'<h3>$[title]</h3>'
                             +'</div>'
                             +'<div class="psc_info">'
-                              +'<textarea style="width: 100%; height: 260px;">$[content]</textarea>'
+                              +'$[content]'
                             +'</div>'
                             +'<a href="#" class="close" title="关闭">关闭</a>'
                           +'</div>');
@@ -215,8 +325,7 @@ var TLE = TLE || {};
                     + '<a href="#" class="TLE_link_getic TLE-down-btn" onclick="return TLE.getbtn(this);"></a>'
                   + '</span>'
                   + '<div class="TLE_p_getbtn TLE_getbtn" style="display: none;">'
-                    + '<a href="#" title="aria2" onmouseover="this.className=\'sel_on\'" onmouseout="this.className=\'\'" onclick="TLE.down(this, TLE.aria2)">Aria2</a>'
-                    + '<a href="#" title="wget" onmouseover="this.className=\'sel_on\'" onmouseout="this.className=\'\'" onclick="TLE.down(this, TLE.wget)">wget</a>'
+                    + exporter_anchors("TLE.down")
                   + '</div>'
                 + '</div>');
     });
@@ -224,8 +333,7 @@ var TLE = TLE || {};
     $("#li_task_down").after('<a href="#" id="TLE_batch_down" title="批量导出" class="btn_m noit"><span><em class="icdwlocal">批量导出</em></span></a>')
                       .parents(".main_link").append(
                             '<div id="TLE_batch_getbtn" class="TLE_getbtn" style="top: 30px; display:none;">'
-                            + '<a href="#" title="aria2" onmouseover="this.className=\'sel_on\'" onmouseout="this.className=\'\'" onclick="TLE.batch_down(TLE.aria2)">Aria2</a>'
-                            + '<a href="#" title="wget" onmouseover="this.className=\'sel_on\'" onmouseout="this.className=\'\'" onclick="TLE.batch_down(TLE.wget)">wget</a>'
+                            + exporter_anchors("TLE.batch_down")
                           + '</div>');
     var _task_check_click = task_check_click;
     task_check_click = function() {
@@ -246,8 +354,7 @@ var TLE = TLE || {};
     $("#view_bt_list_nav_tpl").text($("#view_bt_list_nav_tpl").text().replace('<a href="#" class="btn_m noit" title="云转码"',
           '<a href="#" class="btn_m noit" title="批量导出" id="TLE_bt_down"><span><em class="icdwlocal">批量导出</em></span></a>'
           +'<div id="TLE_bt_getbtn" class="TLE_getbtn" style="top: 30px; display:none;">'
-            + '<a href="#" title="aria2" onmouseover="this.className=\'sel_on\'" onmouseout="this.className=\'\'" onclick="TLE.bt_down(TLE.aria2)">Aria2</a>'
-            + '<a href="#" title="wget" onmouseover="this.className=\'sel_on\'" onmouseout="this.className=\'\'" onclick="TLE.bt_down(TLE.wget)">wget</a>'
+            + exporter_anchors("TLE.bt_down")
           + '</div>'
           +'<a href="#" class="btn_m noit" title="云转码"'));
     var _bt_view_nav = bt_view_nav;
@@ -276,25 +383,3 @@ var TLE = TLE || {};
   };
   init();
 })(TLE);
-
-TLE.aria2 = function(todown) {
-  console.log(todown);
-  var str = "";
-  $.each(todown.tasklist, function(n, task) {
-    $.each(task.filelist, function(l, file) {
-      if (file.downurl) str += "aria2c -c -s10 -x10 --out "+TLE.escape_command(file.title)+" --header 'Cookie: gdriveid="+todown.gdriveid+";' '"+file.downurl+"'\n"; 
-    });
-  });
-  TLE.text_pop("aria2 download command", str);
-};
-
-TLE.wget = function(todown) {
-  console.log(todown);
-  var str = "";
-  $.each(todown.tasklist, function(n, task) {
-    $.each(task.filelist, function(l, file) {
-      if (file.downurl) str += "wget -c -O "+TLE.escape_command(file.title)+" --header 'Cookie: gdriveid="+todown.gdriveid+";' '"+file.downurl+"'\n";
-    });
-  });
-  TLE.text_pop("wget download command", str);
-};
