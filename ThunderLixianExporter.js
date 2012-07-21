@@ -276,16 +276,8 @@ TLE.exporter = {
     return result;
   };
 
-
-  function exporter_anchors(type) {
-    var str = '';
-    console.log("asdf");
-    $.each(TLE.exporter, function(n, f) {
-      str+=('<a href="#" title="'+n+'" onmouseover="this.className=\'sel_on\'" onmouseout="this.className=\'\'" onclick="'+type+'(this, TLE.exporter[\''+n+'\'])">'+n+'</a>');
-    });
-    return str;
-  }
   function init() {
+    //css
     $("head").append('<style>'
           +'.TLE_get_btnbox {position:relative; float:left; z-index:11}'
           +'.TLE_getbtn {position: absolute; top:24px; left:0; border:1px #6FB2F3 solid; background:#fff; width:115px;-moz-border-radius:3px;-webkit-border-radius:3px;border-radius:3px;-moz-box-shadow:2px 2px 3px #ddd;-webkit-box-shadow:2px 2px 3px #ddd;}'
@@ -302,10 +294,10 @@ TLE.exporter = {
           +'.TLE_down_btn:active span {background-position:right -28px;}'
           +'.TLE_icdwlocal { padding-left: 20px; display: inline-block; background: url(http://cloud.vip.xunlei.com/190/img/lx/bg_menu.png) no-repeat 0 999em; background-position: 0 -108px; }'
 
-
           +'.rwbtn.ic_redownloca { display: none !important; }'
           +'.menu { width: 630px !important; }'
         +'</style>');
+    //pop
     $("body").append('<div id="TLE_text_pop" class="pop_rwbox" style="display: none;margin: 0;"></div>');
     $("body").append('<textarea id="TLE_text_tpl" style="display: none;"></textarea>');
     $("#TLE_text_tpl").text('<div class="p_rw_pop">'
@@ -317,7 +309,72 @@ TLE.exporter = {
                             +'</div>'
                             +'<a href="#" class="close" title="关闭">关闭</a>'
                           +'</div>');
+    //setting
+    function getConfig(key) {
+      if (window.localStorage) {
+        return window.localStorage.getItem(key) || "";
+      } else {
+        return getCookie(key);
+      }
+    };
+    function setConfig(key, value) {
+      if (window.localStorage) {
+        window.localStorage.setItem(key, value);
+      } else {
+        setGdCookie(key, value, 86400*365);
+      }
+    };
+    //set default config
+    if (getConfig("TLE_exporter") == "") {
+      var exporters = [];
+      for (var key in TLE.exporters) {
+        exporters.push(key);
+      };
+      setConfig(exporters.join("|"));
+    };
+    $("#setting_main_tpl").text($("#setting_main_tpl").text().replace(/(<\/div>\s+<div class="btnin">)/,
+          '<div class="doline mag01"></div>'
+            +'<h3 style="background-position: 0 -180px;">Thunder Lixian Exporter 设定</h3>'
+            +'<ul>'
+              +'<li><b>启用以下导出器</b></li>'
+              +'<li>'+(function(){
+                var enabled_exporter = getConfig("TLE_exporter").split("|");
+                var str = '';
+                for (var name in TLE.exporter) {
+                  str += '<span class="rw_col"><input type="checkbox" class="TLE_setting_ck" name="TLE_ck_'+name+'" '+(enabled_exporter.indexOf(name) == -1 ? "" : "checked")+' />'+name+'</span>';
+                }
+                return str;
+              })()+'</li>'
+            +'</ul>'
+          +'$1'));
+    var _set_notice_submit = set_notice_submit;
+    set_notice_submit = function(f) {
+      _set_notice_submit(f);
+      var enabled_exporter = [];
+      $(".TLE_setting_ck").each(function(n, e) {
+        if (e.checked) enabled_exporter.push(e.name.replace(/^TLE_ck_/, ""));
+      });
+      var config_str = (enabled_exporter.length == 0) ? "_" : enabled_exporter.join("|");
+      if (getConfig("TLE_exporter") != config_str) {
+        setConfig("TLE_exporter", config_str);
+        TS2.show('设置已生效',1);
+        setTimeout(function(){
+          setting.hide();
+          location.reload(true);
+        }, 1*1000);
+      }
+    };
 
+    function exporter_anchors(type) {
+      var enabled_exporter = getConfig("TLE_exporter").split("|");
+      var str = '';
+      $.each(TLE.exporter, function(n, f) {
+        if (enabled_exporter.indexOf(n) == -1) return;
+        str+=('<a href="#" title="'+n+'" onmouseover="this.className=\'sel_on\'" onmouseout="this.className=\'\'" onclick="'+type+'(this, TLE.exporter[\''+n+'\'])">'+n+'</a>');
+      });
+      return str;
+    }
+    //down
     $(".rwbtn.ic_redownloca").each(function(n, e) {
       $(e).after('<div class="TLE_get_btnbox">'
                   + '<span class="TLE_getlink">'
@@ -330,6 +387,7 @@ TLE.exporter = {
                 + '</div>');
     });
 
+    //batch_down
     $("#li_task_down").after('<a href="#" id="TLE_batch_down" title="批量导出" class="btn_m noit"><span><em class="icdwlocal">批量导出</em></span></a>')
                       .parents(".main_link").append(
                             '<div id="TLE_batch_getbtn" class="TLE_getbtn" style="top: 30px; display:none;">'
@@ -351,6 +409,7 @@ TLE.exporter = {
     };
     $('input[name=ck]').click(task_check_click);
 
+    //bt_down
     $("#view_bt_list_nav_tpl").text($("#view_bt_list_nav_tpl").text().replace('<a href="#" class="btn_m noit" title="云转码"',
           '<a href="#" class="btn_m noit" title="批量导出" id="TLE_bt_down"><span><em class="icdwlocal">批量导出</em></span></a>'
           +'<div id="TLE_bt_getbtn" class="TLE_getbtn" style="top: 30px; display:none;">'
@@ -373,6 +432,7 @@ TLE.exporter = {
       console.log("bt_view_nav called");
     };
 
+    //close menu binding
     $(document.body).bind("click",function(){
       $("div.TLE_p_getbtn, #TLE_batch_getbtn, #TLE_bt_getbtn").hide();
     });
