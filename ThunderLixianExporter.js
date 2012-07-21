@@ -39,6 +39,21 @@ TLE.exporter = {
     });
     TLE.text_pop("wget download command", str);
   },
+  "YAAW": function(todown) {
+    if (TLE.getConfig("TLE_aria2_jsonrpc")) {
+      show_tip("添加中...到YAAW界面查看是否添加成功");
+      var aria2 = new ARIA2(TLE.getConfig("TLE_aria2_jsonrpc"));
+      $.each(todown.tasklist, function(n, task) {
+        $.each(task.filelist, function(l, file) {
+          aria2.addUri(file.downurl, {out: file.title, header: 'Cookie: gdriveid='+todown.gdriveid});
+        });
+      });
+      hide_tip();
+    } else {
+      show_tip("尚未设置Aria2 JSONRPC地址");
+      hide_tip();
+    };
+  },
   'Aria2导出': function(todown) {
     console.log(todown);
     var str = "";
@@ -310,14 +325,14 @@ TLE.exporter = {
                             +'<a href="#" class="close" title="关闭">关闭</a>'
                           +'</div>');
     //setting
-    function getConfig(key) {
+    TLE.getConfig = function(key) {
       if (window.localStorage) {
         return window.localStorage.getItem(key) || "";
       } else {
         return getCookie(key);
       }
     };
-    function setConfig(key, value) {
+    TLE.setConfig = function(key, value) {
       if (window.localStorage) {
         window.localStorage.setItem(key, value);
       } else {
@@ -325,12 +340,12 @@ TLE.exporter = {
       }
     };
     //set default config
-    if (getConfig("TLE_exporter") == "") {
+    if (TLE.getConfig("TLE_exporter") == "") {
       var exporters = [];
       for (var key in TLE.exporter) {
         exporters.push(key);
       };
-      setConfig("TLE_exporter", exporters.join("|"));
+      TLE.setConfig("TLE_exporter", exporters.join("|"));
     };
     $("#setting_main_tpl").text($("#setting_main_tpl").text().replace(/(<\/div>\s+<div class="btnin">)/,
           '<div class="doline mag01"></div>'
@@ -338,13 +353,15 @@ TLE.exporter = {
             +'<ul>'
               +'<li><b>启用以下导出器</b></li>'
               +'<li>'+(function(){
-                var enabled_exporter = getConfig("TLE_exporter").split("|");
+                var enabled_exporter = TLE.getConfig("TLE_exporter").split("|");
                 var str = '';
                 for (var name in TLE.exporter) {
                   str += '<span class="rw_col"><input type="checkbox" class="TLE_setting_ck" name="TLE_ck_'+name+'" '+(enabled_exporter.indexOf(name) == -1 ? "" : "checked")+' />'+name+'</span>';
                 }
                 return str;
               })()+'</li>'
+              +'<li><b>Aria2 JSON-RPC Path</b></li>'
+              +'<li>Path: <input type="text" id="TLE_aria2_jsonrpc" style="width: 350px" value="'+TLE.getConfig("TLE_aria2_jsonrpc")+'"/></li>'
             +'</ul>'
           +'$1'));
     var _set_notice_submit = set_notice_submit;
@@ -355,8 +372,10 @@ TLE.exporter = {
         if (e.checked) enabled_exporter.push(e.name.replace(/^TLE_ck_/, ""));
       });
       var config_str = (enabled_exporter.length == 0) ? "_" : enabled_exporter.join("|");
-      if (getConfig("TLE_exporter") != config_str) {
-        setConfig("TLE_exporter", config_str);
+      var jsonrpc_path = $("#TLE_aria2_jsonrpc").val();
+      if (TLE.getConfig("TLE_exporter") != config_str || TLE.getConfig("TLE_aria2_jsonrpc") != jsonrpc_path) {
+        TLE.setConfig("TLE_exporter", config_str);
+        TLE.setConfig("TLE_aria2_jsonrpc", jsonrpc_path);
         TS2.show('设置已生效',1);
         setTimeout(function(){
           setting.hide();
@@ -366,7 +385,7 @@ TLE.exporter = {
     };
 
     function exporter_anchors(type) {
-      var enabled_exporter = getConfig("TLE_exporter").split("|");
+      var enabled_exporter = TLE.getConfig("TLE_exporter").split("|");
       var str = '';
       $.each(TLE.exporter, function(n, f) {
         if (enabled_exporter.indexOf(n) == -1) return;
@@ -443,3 +462,35 @@ TLE.exporter = {
   };
   init();
 })(TLE);
+
+var ARIA2 = (function() {
+  var jsonrpc_version = '2.0';
+
+  function get_auth(url) {
+    return url.match(/^(?:(?![^:@]+:[^:@\/]*@)[^:\/?#.]+:)?(?:\/\/)?(?:([^:@]*(?::[^:@]*)?)?@)?/)[1];
+  };
+
+  function request(jsonrpc_path, method, params) {
+    var request_obj = {
+      jsonrpc: jsonrpc_version,
+      method: method,
+      id: (new Date()).getTime().toString(),
+    };
+    if (params) request_obj['params'] = params;
+
+    var xhr = new XMLHttpRequest();
+    var auth = get_auth(jsonrpc_path);
+    xhr.open("POST", jsonrpc_path+"?tm="+(new Date()).getTime().toString(), true);
+    xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded; charset=UTF-8");
+    if (auth) xhr.setRequestHeader("Authorization", "Basic "+btoa(auth));
+    xhr.send(JSON.stringify(request_obj));
+  };
+
+  return function(jsonrpc_path) {
+    this.jsonrpc_path = jsonrpc_path;
+    this.addUri = function (uri, options) {
+      request(this.jsonrpc_path, 'aria2.addUri', [[uri, ], options]);
+    };
+    return this;
+  }
+})();
