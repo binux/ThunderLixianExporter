@@ -76,6 +76,24 @@ TLE.exporter = {
     });
     TLE.window_pop("IDM导出文件下载", str, "idm.ef2");
   },
+  'IDM命令': function(todown) {
+    console.log(todown);
+    if (TLE.getConfig("TLE_idm_path")) {
+      var idmp = 'chcp 65001 > nul && "' + TLE.getConfig("TLE_idm_path") + '\\idman.exe"'
+      var str = idmp + '\r\n';
+      $.each(todown.tasklist, function(n, task) {
+        $.each(task.filelist, function(l, file) {
+          if (!file.downurl) return;
+          str += idmp + ' /a /n /d "' + file.downurl + '" /f "' + file.title + '"\r\n'
+        });
+      });
+      str += idmp + ' /s';
+      TLE.window_pop("IDM命令文件下载", str, "idmcmd.bat");
+    } else {
+      show_tip("尚未设置IDM 程序地址");
+      hide_tip();
+    }     
+  },  
   'Orbit导出': function(todown) {
     console.log(todown);
     var str = "";
@@ -362,6 +380,8 @@ TLE.exporter = {
               })()+'</li>'
               +'<li><b>Aria2 JSON-RPC Path</b></li>'
               +'<li>Path: <input type="text" id="TLE_aria2_jsonrpc" style="width: 350px" value="'+TLE.getConfig("TLE_aria2_jsonrpc")+'"/></li>'
+              +'<li><b>IDM Path (IDM命令批处理文件导出专用，运行批处理文件添加任务之前请确保IDM主程序已在运行）</b></li>'
+              +'<li>Path: <input type="text" id="TLE_idm_path" style="width: 350px" value="'+TLE.getConfig("TLE_idm_path")+'"/></li>'              
             +'</ul>'
           +'$1'));
     var _set_notice_submit = set_notice_submit;
@@ -373,9 +393,11 @@ TLE.exporter = {
       });
       var config_str = (enabled_exporter.length == 0) ? "_" : enabled_exporter.join("|");
       var jsonrpc_path = $("#TLE_aria2_jsonrpc").val();
-      if (TLE.getConfig("TLE_exporter") != config_str || TLE.getConfig("TLE_aria2_jsonrpc") != jsonrpc_path) {
+      var idm_path = $("#TLE_idm_path").val();
+      if (TLE.getConfig("TLE_exporter") != config_str || TLE.getConfig("TLE_aria2_jsonrpc") != jsonrpc_path || TLE.getConfig("TLE_idm_path") != idm_path) {
         TLE.setConfig("TLE_exporter", config_str);
         TLE.setConfig("TLE_aria2_jsonrpc", jsonrpc_path);
+        TLE.setConfig("TLE_idm_path",idm_path);
         TS2.show('设置已生效',1);
         setTimeout(function(){
           setting.hide();
