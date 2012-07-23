@@ -71,7 +71,7 @@ TLE.exporter = {
     $.each(todown.tasklist, function(n, task) {
       $.each(task.filelist, function(l, file) {
         if (!file.downurl) return;
-        str += '<\r\n'+file.downurl+'\r\ncookie: gdriveid='+todown.gdriveid+'\r\n>\r\n'
+        str += '<\r\n'+TLE.url_rewrite(file.downurl, file.title)+'\r\ncookie: gdriveid='+todown.gdriveid+'\r\n>\r\n'
       });
     });
     TLE.window_pop("IDM导出文件下载", str, "idm.ef2");
@@ -278,6 +278,13 @@ TLE.exporter = {
   TLE.multiple_server_fix = function(url) {
     return "'"+url.replace("gdl", "'{gdl,dl.{f,g,h,i,twin}}'")+"'";
   }
+  
+  
+  TLE.url_rewrite = function(url, filename) {
+    url = url.replace("vip.xunlei.com/download", "vip.xunlei.com/"+encodeURIComponent(filename));
+    url = url.replace(/n=\w+/, "n=0");
+    return url;
+  };
 
   var alpha = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
   TLE.escape_command = function(str) {
