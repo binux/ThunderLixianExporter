@@ -119,7 +119,7 @@ TLE.vod_exporter = {
     });
     TLE.text_pop("mplayer直接播放指令", str);
   },
-  "wget下载转码视频": function(data) {
+  "wget下载": function(data) {
     console.log(data);
     var str = "";
     $.each(data.resp.vodinfo_list, function(n, e) {
@@ -324,10 +324,12 @@ TLE.vod_exporter = {
       platform: 1,
       userid: getCookie("userid"),
     }, function(data) {
-      if (!data.resp.vodinfo_list || data.resp.vodinfo_list.length == 0)
+      if (!data.resp.vodinfo_list || data.resp.vodinfo_list.length == 0) {
         show_tip("云转码尚未完成");
+      } else {
+        _do(data);
+      };
       hide_tip();
-      _do(data);
     });
   };
 
