@@ -63,7 +63,7 @@ TLE.exporter = {
         str += file.downurl+'\r\n  out='+file.title+'\r\n  header=Cookie: gdriveid='+todown.gdriveid+'\r\n  continue=true\r\n  max-connection-per-server=5\r\n  split=10\r\n  parameterized-uri=true\r\n\r\n';
       });
     });
-    TLE.window_pop("Aria2导出文件下载", str, "aria2.down");
+    TLE.file_pop("Aria2导出文件下载", str, "aria2.down");
   },
   'IDM导出': function(todown) {
     console.log(todown);
@@ -74,7 +74,7 @@ TLE.exporter = {
         str += '<\r\n'+TLE.url_rewrite(file.downurl, file.title)+'\r\ncookie: gdriveid='+todown.gdriveid+'\r\n>\r\n'
       });
     });
-    TLE.window_pop("IDM导出文件下载", str, "idm.ef2");
+    TLE.file_pop("IDM导出文件下载", str, "idm.ef2");
   },
   'Orbit导出': function(todown) {
     console.log(todown);
@@ -85,7 +85,48 @@ TLE.exporter = {
         str += file.downurl+'|'+file.title.replace("|", "_")+'||gdriveid='+todown.gdriveid+'\r\n'
       });
     });
-    TLE.window_pop("Orbit导出文件下载", str, "orbit.olt");
+    TLE.file_pop("Orbit导出文件下载", str, "orbit.olt");
+  },
+};
+
+TLE.fix_vod_url = function(url) {
+  var size = url.match(/&s=(\d+)/)[1];
+  return url.replace(/&p=\w+/, "").replace(/&xplaybackid=[\w-]+/, "") + "&start=0&end=" + size;
+};
+TLE.vod_spec_id_string = function(spec_id) {
+  switch (spec_id) {
+    case 226048:
+      return "标清(360p)";
+      break;
+    case 283392:
+      return "高清(480p)";
+      break;
+    case 357120:
+      return "超清(720p)";
+      break;
+    default:
+      return "不知什么清";
+      break;
+  };
+};
+TLE.vod_exporter = {
+  "mplayer播放": function(data) {
+    console.log(data);
+    var str = "";
+    $.each(data.resp.vodinfo_list, function(n, e) {
+      str += "======== "+TLE.vod_spec_id_string(e.spec_id)+" ========\n";
+      str += "mplayer -cache 8910 -http-header-fields 'cookie: userid="+data.resp.userid+"' '"+TLE.fix_vod_url(e.vod_url)+"'\n";
+    });
+    TLE.text_pop("mplayer直接播放指令", str);
+  },
+  "wget下载转码视频": function(data) {
+    console.log(data);
+    var str = "";
+    $.each(data.resp.vodinfo_list, function(n, e) {
+      str += "======== "+TLE.vod_spec_id_string(e.spec_id)+" ========\n";
+      str += "wget -O '"+decodeURIComponent(data.resp.src_info.file_name)+".flv' --header 'cookie: userid="+data.resp.userid+"' '"+TLE.fix_vod_url(e.vod_url)+"'\n";
+    });
+    TLE.text_pop("wget下载转码视频", str);
   },
 };
 
@@ -248,6 +289,47 @@ TLE.exporter = {
     console.log("bt_down");
   };
 
+  TLE.yun_down = function(_this, _do) {
+    var p = $(_this).parents(".rw_list");
+    if (p.attr("isvod")) {
+      var fid = p.attr("i");
+      var info = {
+        'title': $("#bt_taskname"+fid).val(),
+        'url': $("#bturl"+fid).val(),
+        'downurl': $("#btdownurl"+fid).val(),
+        'cid': $("#btcid"+fid).val(),
+        'gcid': $("#btgcid"+fid).val(),
+        'filesize': $("#bt_filesize"+fid).val(),
+      };
+    } else {
+      var raw = get_taskinfo(p);
+      var info = {
+        'title': raw.taskname,
+        'url': raw.f_url,
+        'downurl': raw.dl_url,
+        'cid': raw.dcid,
+        'gcid': "",
+        'filesize': raw.ysfilesize,
+      };
+    }
+    //console.log(info);
+    if (!info.downurl) {
+      show_tip("任务尚未完成");
+      hide_tip();
+    };
+
+    show_tip("载入中...");
+    $.getJSON("http://i.vod.xunlei.com/req_get_method_vod?jsonp=?", {
+      url: info.downurl,
+      platform: 1,
+      userid: getCookie("userid"),
+    }, function(data) {
+      if (!data.resp.vodinfo_list || data.resp.vodinfo_list.length == 0)
+        show_tip("云转码尚未完成");
+      hide_tip();
+      _do(data);
+    });
+  };
 
   TLE.getbtn = function(_this) {
     $(_this).parents(".TLE_get_btnbox").find(".TLE_p_getbtn").toggle();
@@ -262,7 +344,7 @@ TLE.exporter = {
       onHide: function() { $(document.body).click(); },
     });
   };
-  TLE.window_pop = function(title, content, filename) {
+  TLE.file_pop = function(title, content, filename) {
     var url = "data:text/html;charset=utf-8,"+encodeURIComponent(content);
     var content = '<div style="width: 100%; height: 100px;">'
                     +'<div style="padding: 30px 0 0 30%;">'
@@ -270,6 +352,11 @@ TLE.exporter = {
                       +(isChrome ? '' : '(右键另存为'+filename+')')
                     +'</div>'
                  +'</div>'
+    $("#TLE_text_pop").tpl("TLE_text_tpl", {'title': title, 'content': content}).show().pop({
+      onHide: function() { $(document.body).click(); },
+    });
+  };
+  TLE.window_pop = function(title, content) {
     $("#TLE_text_pop").tpl("TLE_text_tpl", {'title': title, 'content': content}).show().pop({
       onHide: function() { $(document.body).click(); },
     });
@@ -456,6 +543,23 @@ TLE.exporter = {
       };
       $("#TLE_bt_getbtn").hide();
       console.log("bt_view_nav called");
+    };
+
+    //yun_btnbox
+    function replace_yun_btnbox() {
+      $(".p_yunbtn").each(function(n, e) {
+        if (e.getAttribute("data-TLE-play")) return;
+        $.each(TLE.vod_exporter, function(n, f) {
+          $(e).append('<a href="#" title="'+n+'" onmouseover="this.className=\'sel_on\'" onmouseout="this.className=\'\'" onclick="TLE.yun_down(this, TLE.vod_exporter[\''+n+'\'])">'+n+'</a>');
+        });
+        e.setAttribute("data-TLE-play", "1");
+      });
+    };
+    replace_yun_btnbox();
+    var _fill_bt_list = fill_bt_list;
+    fill_bt_list = function(record) {
+      _fill_bt_list(record);
+      replace_yun_btnbox();
     };
 
     //close menu binding

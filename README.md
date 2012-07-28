@@ -1,15 +1,21 @@
 ThunderLixianExporter
 =====================
 
-将迅雷离线地址导出成aria2/wget下载命令，方便Linux/Mac用户使用
+将迅雷离线地址导出成aria2/wget等下载命令，方便Linux/Mac用户使用
 
+
+* 原生导出界面整合, 原生设置界面整合
+* 云点播导出至mplayer播放
+* 多种可扩展的导出器(aria2/aria2-rpc/wget/IDM/Orbit)
+* IDM文件名截断修复
+* 直接输出选中的链接，配合FlashGot/DownThemAll使用
 
 Usage
 -----
 
 安装Userscript
 
-> 访问： [ThunderLixianExporter.user.js](https://raw.github.com/binux/ThunderLixianExporter/master/ThunderLixianExporter.user.js)
+> 使用支持userscript的浏览器访问： [ThunderLixianExporter.user.js](https://raw.github.com/binux/ThunderLixianExporter/master/ThunderLixianExporter.user.js)
 
 
 或，快速体验
