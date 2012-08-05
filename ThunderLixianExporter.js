@@ -113,9 +113,15 @@ TLE.vod_exporter = {
   "mplayer播放": function(data) {
     console.log(data);
     var str = "";
+    var ismac = (navigator.platform.indexOf("Mac") == 0);
     $.each(data.resp.vodinfo_list, function(n, e) {
       str += "======== "+TLE.vod_spec_id_string(e.spec_id)+" ========\n";
-      str += "mplayer -cache 8910 -http-header-fields 'cookie: userid="+data.resp.userid+"' '"+TLE.fix_vod_url(e.vod_url)+"'\n";
+      if (ismac) {
+        //need test
+        str += "open -a \"MPlayerX.app\" --args '-ExtraOptions' '\"-http-header-fields \'cookie: userid="+data.resp.userid+"\'\"' '"+TLE.fix_vod_url(e.vod_url)+"'";
+      } else {
+        str += "mplayer -cache 8910 -http-header-fields 'cookie: userid="+data.resp.userid+"' '"+TLE.fix_vod_url(e.vod_url)+"'\n";
+      }
     });
     TLE.text_pop("mplayer直接播放指令", str);
   },
@@ -548,21 +554,22 @@ TLE.vod_exporter = {
     };
 
     //yun_btnbox
-    function replace_yun_btnbox() {
-      $(".p_yunbtn").each(function(n, e) {
-        if (e.getAttribute("data-TLE-play")) return;
-        $.each(TLE.vod_exporter, function(n, f) {
-          $(e).append('<a href="#" title="'+n+'" onmouseover="this.className=\'sel_on\'" onmouseout="this.className=\'\'" onclick="TLE.yun_down(this, TLE.vod_exporter[\''+n+'\'])">'+n+'</a>');
-        });
-        e.setAttribute("data-TLE-play", "1");
-      });
-    };
-    replace_yun_btnbox();
-    var _fill_bt_list = fill_bt_list;
-    fill_bt_list = function(record) {
-      _fill_bt_list(record);
-      replace_yun_btnbox();
-    };
+    //not work due to query api check referer now. f**k xunlei.
+    //function replace_yun_btnbox() {
+      //$(".p_yunbtn").each(function(n, e) {
+        //if (e.getAttribute("data-TLE-play")) return;
+        //$.each(TLE.vod_exporter, function(n, f) {
+          //$(e).append('<a href="#" title="'+n+'" onmouseover="this.className=\'sel_on\'" onmouseout="this.className=\'\'" onclick="TLE.yun_down(this, TLE.vod_exporter[\''+n+'\'])">'+n+'</a>');
+        //});
+        //e.setAttribute("data-TLE-play", "1");
+      //});
+    //};
+    //replace_yun_btnbox();
+    //var _fill_bt_list = fill_bt_list;
+    //fill_bt_list = function(record) {
+      //_fill_bt_list(record);
+      //replace_yun_btnbox();
+    //};
 
     //close menu binding
     $(document.body).bind("click",function(){
