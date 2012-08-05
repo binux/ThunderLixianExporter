@@ -1,11 +1,10 @@
 ThunderLixianExporter
 =====================
-
+œ
 将迅雷离线地址导出成aria2/wget等下载命令，方便Linux/Mac用户使用
 
 * **您需要拥有迅雷会员帐号才能使用此插件**
 * 原生导出界面整合, 原生设置界面整合
-* 云点播导出至mplayer播放
 * 多种可扩展的导出器(aria2/aria2-rpc/wget/IDM/Orbit)
 * IDM文件名截断修复
 * 直接输出选中的链接，配合FlashGot/DownThemAll使用
