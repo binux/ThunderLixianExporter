@@ -27,6 +27,7 @@ function html5player() {
                 +'<div id="xl_button_box" style="width: 100%; height: 6%; line-height: 22px; text-align: right; ">'
                 +'</div>');
     list.forEach(function(n, i) {
+      console.log(n);
       var str = "";
       switch(n.spec_id) {
         case 225536:
@@ -37,11 +38,12 @@ function html5player() {
         case 283392:
           str = "480P";
           break;
+        case 356608:
         case 357120:
           str = "720P";
           break;
         default:
-          return "不知什么清";
+          str = "不知什么清";
           break;
       };
       $('<button style="margin-right:5px;">'+str+'</button>').appendTo("#xl_button_box").click(function() {
