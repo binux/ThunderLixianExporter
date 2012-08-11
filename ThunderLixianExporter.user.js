@@ -5,7 +5,7 @@
 // @description  export thunder lixian url to aria2/wget
 // @match      http://dynamic.cloud.vip.xunlei.com/user_task?*
 // @run-at document-end
-// @copyright  2012+, You
+// @copyright  2012+, Binux <root@binux.me>
 // ==/UserScript==
 
 var script = document.createElement('script');

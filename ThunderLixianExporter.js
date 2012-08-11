@@ -95,9 +95,11 @@ TLE.fix_vod_url = function(url) {
 };
 TLE.vod_spec_id_string = function(spec_id) {
   switch (spec_id) {
+    case 225536:
     case 226048:
       return "标清(360p)";
       break;
+    case 282880:
     case 283392:
       return "高清(480p)";
       break;
@@ -374,10 +376,30 @@ TLE.vod_exporter = {
     return "'"+url.replace("gdl", "'{gdl,dl.{f,g,h,i,twin}}'")+"'";
   }
   
-  
+  function encode_utf8(s) {
+    return unescape( encodeURIComponent( s ) );
+  };
+  function to_hex(num) {
+    var s = num.toString(16);
+    if (s.length == 1)
+      return '0'+s;
+    else
+      return s;
+  };
+  var thunder_filename_mask = [0x61, 0x31, 0xe4, 0x5f, 0x00, 0x00, 0x00, 0x00];
+  function thunder_filename_encode(filename) {
+    var result = ["01", ];
+    $.each(encode_utf8(filename), function(i) {
+      result.push(to_hex(filename.charCodeAt(i)^thunder_filename_mask[i%8]).toUpperCase())
+    });
+    while (result.length % 8 != 1) {
+      result.push(to_hex(thunder_filename_mask[(result.length-1)%8]).toUpperCase());
+    }
+    return result.join("");
+  };
+
   TLE.url_rewrite = function(url, filename) {
-    url = url.replace("vip.xunlei.com/download", "vip.xunlei.com/"+encodeURIComponent(filename));
-    url = url.replace(/&n=\w+/, "&n=0");
+    url = url.replace(/&n=\w+/, "&n="+thunder_filename_encode(filename));
     return url;
   };
 
