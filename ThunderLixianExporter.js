@@ -389,8 +389,8 @@ TLE.vod_exporter = {
   var thunder_filename_mask = [0x61, 0x31, 0xe4, 0x5f, 0x00, 0x00, 0x00, 0x00];
   function thunder_filename_encode(filename) {
     var result = ["01", ];
-    $.each(encode_utf8(filename), function(i) {
-      result.push(to_hex(filename.charCodeAt(i)^thunder_filename_mask[i%8]).toUpperCase())
+    $.each(encode_utf8(filename), function(i, n) {
+      result.push(to_hex(n.charCodeAt(0)^thunder_filename_mask[i%8]).toUpperCase())
     });
     while (result.length % 8 != 1) {
       result.push(to_hex(thunder_filename_mask[(result.length-1)%8]).toUpperCase());
