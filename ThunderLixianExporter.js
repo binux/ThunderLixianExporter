@@ -11,7 +11,7 @@ TLE.exporter = {
     var str = '<ul style="max-height: 300px; overflow-y: scroll; overflow-x: hidden;">';
     $.each(todown.tasklist, function(n, task) {
       $.each(task.filelist, function(l, file) {
-        if (file.downurl) str += '<li><a href="'+file.downurl+'" target="_blank">'+file.title+'</a></li>';
+        if (file.downurl) str += '<li><a href="'+TLE.url_rewrite(file.downurl, file.title)+'" target="_blank">'+file.title+'</a></li>';
       });
     });
     str += "</ul>";
