@@ -45,7 +45,8 @@ TLE.exporter = {
       var aria2 = new ARIA2(TLE.getConfig("TLE_aria2_jsonrpc"));
       $.each(todown.tasklist, function(n, task) {
         $.each(task.filelist, function(l, file) {
-          aria2.addUri(file.downurl, {out: file.title, header: 'Cookie: gdriveid='+todown.gdriveid});
+          filetitle=file.title.replace(/\?/g,' ');
+          aria2.addUri(file.downurl, {out: filetitle, header: 'Cookie: gdriveid='+todown.gdriveid});
         });
       });
       hide_tip();
