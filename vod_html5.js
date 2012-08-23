@@ -9,7 +9,7 @@ $("#TLE_html5_player").click(function() {
 
 function html5player() {
   function play(url) {
-    url = url.replace(/&n=\w+/, "&n=08586C0FD0F6390000")+"&p=1&xplaybackid=0";
+    url = url.replace(/&n=\w+/, "&n=08586C0FD0F6390000").replace(/&p=\d+/, "")+"&p=1&xplaybackid=0";
     $("#xl_vod_fx_flash_box").attr("src", url);
     $("#original_url").html('mplayer播放:'+'<input value="'+play_with_mplayer(url)+'" />');
     $("#original_url input").attr("style", "background:#777;border:0;width:400px;");
