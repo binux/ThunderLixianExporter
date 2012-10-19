@@ -345,7 +345,7 @@ TLE.exporter = {
           +'.TLE_icdwlocal { padding-left: 20px; display: inline-block; background: url(http://cloud.vip.xunlei.com/190/img/lx/bg_menu.png) no-repeat 0 999em; background-position: 0 -108px; }'
 
           +'.rwbtn.ic_redownloca { display: none !important; }'
-          +'.menu { width: 630px !important; }'
+          +'.menu { width: 700px !important; }'
         +'</style>');
     //pop
     $("body").append('<div id="TLE_text_pop" class="pop_rwbox" style="display: none;margin: 0;"></div>');
