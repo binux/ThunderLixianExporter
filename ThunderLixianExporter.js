@@ -464,12 +464,12 @@ TLE.exporter = {
     $('input[name=ck]').click(task_check_click);
 
     //bt_down
-    $("#view_bt_list_nav_tpl").text($("#view_bt_list_nav_tpl").text().replace('<a href="#" class="btn_m noit" title="云转码"',
-          '<a href="#" class="btn_m noit" title="批量导出" id="TLE_bt_down"><span><em class="icdwlocal">批量导出</em></span></a>'
+    $("#view_bt_list_nav_tpl").text($("#view_bt_list_nav_tpl").text().replace('取回本地</em></span></a>',
+          '取回本地</em></span></a>'
+          +'<a href="#" class="btn_m noit" title="批量导出" id="TLE_bt_down"><span><em class="icdwlocal">批量导出</em></span></a>'
           +'<div id="TLE_bt_getbtn" class="TLE_getbtn" style="top: 30px; display:none;">'
             + exporter_anchors("TLE.bt_down")
-          + '</div>'
-          +'<a href="#" class="btn_m noit" title="云转码"'));
+          + '</div>'));
     var _bt_view_nav = bt_view_nav;
     bt_view_nav = function() {
       _bt_view_nav();
