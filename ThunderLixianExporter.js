@@ -7,7 +7,7 @@ var TLE = TLE || {};
 
 TLE.exporter = {
   '复制链接': function(todown) {
-    console.log(todown);
+    //console.log(todown);
     var str = '<ul style="max-height: 300px; overflow-y: scroll; overflow-x: hidden;">';
     $.each(todown.tasklist, function(n, task) {
       $.each(task.filelist, function(l, file) {
@@ -20,7 +20,7 @@ TLE.exporter = {
     });
   },
   'Aria2': function(todown) {
-    console.log(todown);
+    //console.log(todown);
     var str = "";
     $.each(todown.tasklist, function(n, task) {
       $.each(task.filelist, function(l, file) {
@@ -30,7 +30,7 @@ TLE.exporter = {
     TLE.text_pop("aria2 download command", str);
   },
   'wget': function(todown) {
-    console.log(todown);
+    //console.log(todown);
     var str = "";
     $.each(todown.tasklist, function(n, task) {
       $.each(task.filelist, function(l, file) {
@@ -55,7 +55,7 @@ TLE.exporter = {
     };
   },
   'Aria2导出': function(todown) {
-    console.log(todown);
+    //console.log(todown);
     var str = "";
     $.each(todown.tasklist, function(n, task) {
       $.each(task.filelist, function(l, file) {
@@ -66,7 +66,7 @@ TLE.exporter = {
     TLE.file_pop("Aria2导出文件下载", str, "aria2.down");
   },
   'IDM导出': function(todown) {
-    console.log(todown);
+    //console.log(todown);
     var str = "";
     $.each(todown.tasklist, function(n, task) {
       $.each(task.filelist, function(l, file) {
@@ -77,7 +77,7 @@ TLE.exporter = {
     TLE.file_pop("IDM导出文件下载", str, "idm.ef2");
   },
   'Orbit导出': function(todown) {
-    console.log(todown);
+    //console.log(todown);
     var str = "";
     $.each(todown.tasklist, function(n, task) {
       $.each(task.filelist, function(l, file) {
@@ -245,11 +245,11 @@ TLE.exporter = {
     todown.gdriveid = getCookie("gdriveid");
     todown.tasklist = {};
     todown.tasklist[taskid] = build_bt_taskinfo(info, files);
-    console.log(todown);
+    //console.log(todown);
 
     _do(todown);
 
-    console.log("bt_down");
+    //console.log("bt_down");
   };
 
   TLE.getbtn = function(_this) {
@@ -459,7 +459,7 @@ TLE.exporter = {
           return false;
         });
       };
-      console.log("task_check_click called");
+      //console.log("task_check_click called");
     };
     $('input[name=ck]').click(task_check_click);
 
@@ -483,7 +483,7 @@ TLE.exporter = {
         });
       };
       $("#TLE_bt_getbtn").hide();
-      console.log("bt_view_nav called");
+      //console.log("bt_view_nav called");
     };
 
     //close menu binding
