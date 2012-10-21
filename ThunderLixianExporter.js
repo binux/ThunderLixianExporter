@@ -252,6 +252,32 @@ TLE.exporter = {
     //console.log("bt_down");
   };
 
+  TLE.bt_down_one = function(_this, _do) {
+    var files = []
+    var fid = $(_this).parents(".rw_list").attr("i");
+    var file = {
+      'title': safe_title($("#bt_taskname"+fid).val()),
+      'url': $("#bturl"+fid).val(),
+      'downurl': $("#btdownurl"+fid).val(),
+      'cid': $("#btcid"+fid).val(),
+      'gcid': $("#btgcid"+fid).val(),
+      'filesize': $("#bt_filesize"+fid).val(),
+    };
+    files.push(file);
+    var taskid = $("#view_bt_taskid").val();
+    var info = get_taskinfo($("#tr_c"+taskid));
+
+    var todown = {};
+    todown.gdriveid = getCookie("gdriveid");
+    todown.tasklist = {};
+    todown.tasklist[taskid] = build_bt_taskinfo(info, files);
+    //console.log(todown);
+
+    _do(todown);
+
+    //console.log("bt_down");
+  };
+
   TLE.getbtn = function(_this) {
     $(_this).parents(".TLE_get_btnbox").find(".TLE_p_getbtn").toggle();
     close_rightmenu_layer();
@@ -470,6 +496,17 @@ TLE.exporter = {
           +'<div id="TLE_bt_getbtn" class="TLE_getbtn" style="top: 30px; display:none;">'
             + exporter_anchors("TLE.bt_down")
           + '</div>'));
+    $("#view_bt_list_tpl").text($("#view_bt_list_tpl").text().replace('ic_redownloca" title="">取回本地</a>',
+        'ic_redownloca" title="">取回本地</a>'
+        +'<div class="TLE_get_btnbox">'
+          + '<span class="TLE_getlink">'
+            + '<a href="#" class="TLE_link_gettxt TLE-down-text" style="padding-left: 20px; width: 57px;" onclick="thunder_download($[p.i],1);return false;">取回本地</a>'
+            + '<a href="#" class="TLE_link_getic TLE-down-btn" onclick="return TLE.getbtn(this);"></a>'
+          + '</span>'
+          + '<div class="TLE_p_getbtn TLE_getbtn" style="display: none;">'
+            + exporter_anchors("TLE.bt_down_one")
+          + '</div>'
+        + '</div>'));
     var _bt_view_nav = bt_view_nav;
     bt_view_nav = function() {
       _bt_view_nav();
