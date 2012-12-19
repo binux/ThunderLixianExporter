@@ -373,9 +373,9 @@ TLE.exporter = {
           +'.rwbtn.ic_redownloca { display: none !important; }'
           +'.menu { width: 700px !important; }'
           // thunder css sucks
-          +'.rwbox .w04{width:530px;_width:440px;margin-right:10px}'
-          +'.subrwinfo .subw02{display:inline-block; width: 620px;_width:523px;float:left}'
-          +'.namelink{font-family: Arial,simsun, sans-serif; height:18px; overflow:hidden;text-overflow:ellipsis; display:block; width: 523px;word-break:break-all;word-wrap: break-word;}'
+          +'.rwbox .w04{width:530px;}'
+          +'.subrwinfo .subw02{width: 620px;}'
+          +'.namelink{width: 523px;}'
         +'</style>');
     //pop
     $("body").append('<div id="TLE_text_pop" class="pop_rwbox" style="display: none;margin: 0;"></div>');
