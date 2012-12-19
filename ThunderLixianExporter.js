@@ -372,6 +372,9 @@ TLE.exporter = {
 
           +'.rwbtn.ic_redownloca { display: none !important; }'
           +'.menu { width: 700px !important; }'
+          // thunder css sucks
+          +'.rwbox .w04{width:530px;_width:440px;margin-right:10px}'
+          +'.subrwinfo .subw02{display:inline-block; width: 620px;_width:523px;float:left}'
         +'</style>');
     //pop
     $("body").append('<div id="TLE_text_pop" class="pop_rwbox" style="display: none;margin: 0;"></div>');
