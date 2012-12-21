@@ -372,6 +372,8 @@ TLE.exporter = {
 
           +'.rwbtn.ic_redownloca { display: none !important; }'
           +'.menu { width: 700px !important; }'
+          // for thunder css
+          +'.rwset {width:530px;}'
         +'</style>');
     //pop
     $("body").append('<div id="TLE_text_pop" class="pop_rwbox" style="display: none;margin: 0;"></div>');
