@@ -15,7 +15,7 @@ function html5player() {
     $("#original_url input").attr("style", "background:#777;border:0;width:400px;");
   }
 
-  $.getScript('http://i.vod.xunlei.com/req_get_method_vod?'+$.param({
+  $.getJSON('http://i.vod.xunlei.com/req_get_method_vod?jsonp=?', {
     url: XL_CLOUD_FX_INSTANCE.curUrl,
     video_name: XL_CLOUD_FX_INSTANCE.curName,
     platform: 1,
@@ -23,10 +23,8 @@ function html5player() {
     userid: XL_CLOUD_FX_INSTANCE.user.u,
     sessionid: XL_CLOUD_FX_INSTANCE.user.s,
     from: 'vlist',
-    jsonp: 'XL_CLOUD_FX_INSTANCEqueryBack',
-  }), function() {
-    if (typeof XL_CLOUD_FX_INSTANCE != "undefined" && XL_CLOUD_FX_INSTANCE.curPlay) {
-      var list = XL_CLOUD_FX_INSTANCE.curPlay.vodinfo_list
+  }), function(data) {
+      var list = data.vodinfo_list
       $("#XL_CLOUD_VOD_PLAYER").empty();
       if (list.length == 0) {
         $("#XL_CLOUD_VOD_PLAYER").append('<img src="http://vod.xunlei.com/img/play_bg.jpg" width="100%" height="100%"><div style="position:absolute;left:0;top:46%;text-align:center;font-size:14px;color:#FFF;margin: 0;width:100%;height:22px;">云点播尚未转码完成。</div>');
@@ -70,7 +68,6 @@ function html5player() {
       var tmp = $("#xl_button_box button:last");
       tmp.text("• "+tmp.text());
       play(list[list.length-1].vod_url);
-    }
   })
 };
 
