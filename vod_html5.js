@@ -24,7 +24,7 @@ function html5player() {
     sessionid: XL_CLOUD_FX_INSTANCE.user.s,
     from: 'vlist',
   }, function(data) {
-      var list = data.vodinfo_list
+      var list = data.resp.vodinfo_list
       $("#XL_CLOUD_VOD_PLAYER").empty();
       if (list.length == 0) {
         $("#XL_CLOUD_VOD_PLAYER").append('<img src="http://vod.xunlei.com/img/play_bg.jpg" width="100%" height="100%"><div style="position:absolute;left:0;top:46%;text-align:center;font-size:14px;color:#FFF;margin: 0;width:100%;height:22px;">云点播尚未转码完成。</div>');
