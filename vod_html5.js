@@ -15,52 +15,63 @@ function html5player() {
     $("#original_url input").attr("style", "background:#777;border:0;width:400px;");
   }
 
-  if (typeof XL_CLOUD_FX_INSTANCE != "undefined" && XL_CLOUD_FX_INSTANCE.curPlay) {
-    var list = XL_CLOUD_FX_INSTANCE.curPlay.vodinfo_list
-    $("#XL_CLOUD_VOD_PLAYER").empty();
-    if (list.length == 0) {
-      $("#XL_CLOUD_VOD_PLAYER").append('<img src="http://vod.xunlei.com/img/play_bg.jpg" width="100%" height="100%"><div style="position:absolute;left:0;top:46%;text-align:center;font-size:14px;color:#FFF;margin: 0;width:100%;height:22px;">云点播尚未转码完成。</div>');
-      return ;
-    };
-    $("#mycopyer").hide();
-    $("#XL_CLOUD_VOD_PLAYER").append('<video id="xl_vod_fx_flash_box" width="100%" height="94%" style="z-index: 100;" controls="controls" autoplay="true"></video>'
-                +'<div id="xl_button_box" style="width: 100%; height: 6%; line-height: 22px; text-align: right; ">'
-                +'</div>');
-    list.forEach(function(n, i) {
-      console.log(n);
-      var str = "";
-      switch(n.spec_id) {
-        case 225536:
-        case 226048:
-          str = "360P";
-          break;
-        case 282880:
-        case 283392:
-          str = "480P";
-          break;
-        case 356608:
-        case 357120:
-          str = "720P";
-          break;
-        default:
-          str = "不知什么清";
-          break;
+  $.getScript('http://i.vod.xunlei.com/req_get_method_vod?'+$.param({
+    url: XL_CLOUD_FX_INSTANCE.curUrl,
+    video_name: XL_CLOUD_FX_INSTANCE.curName,
+    platform: 1,
+    vip: 1,
+    userid: XL_CLOUD_FX_INSTANCE.user.u,
+    sessionid: XL_CLOUD_FX_INSTANCE.user.s,
+    from: 'vlist',
+    jsonp: 'XL_CLOUD_FX_INSTANCEqueryBack',
+  }), function() {
+    if (typeof XL_CLOUD_FX_INSTANCE != "undefined" && XL_CLOUD_FX_INSTANCE.curPlay) {
+      var list = XL_CLOUD_FX_INSTANCE.curPlay.vodinfo_list
+      $("#XL_CLOUD_VOD_PLAYER").empty();
+      if (list.length == 0) {
+        $("#XL_CLOUD_VOD_PLAYER").append('<img src="http://vod.xunlei.com/img/play_bg.jpg" width="100%" height="100%"><div style="position:absolute;left:0;top:46%;text-align:center;font-size:14px;color:#FFF;margin: 0;width:100%;height:22px;">云点播尚未转码完成。</div>');
+        return ;
       };
-      $('<button style="margin-right:5px;">'+str+'</button>').appendTo("#xl_button_box").click(function() {
-        $("#xl_button_box button").each(function(n, e) {
-          e = $(e);
-          e.text(e.text().replace("• ", ""));
+      $("#mycopyer").hide();
+      $("#XL_CLOUD_VOD_PLAYER").append('<video id="xl_vod_fx_flash_box" width="100%" height="94%" style="z-index: 100;" controls="controls" autoplay="true"></video>'
+                  +'<div id="xl_button_box" style="width: 100%; height: 6%; line-height: 22px; text-align: right; ">'
+                  +'</div>');
+      list.forEach(function(n, i) {
+        console.log(n);
+        var str = "";
+        switch(n.spec_id) {
+          case 225536:
+          case 226048:
+            str = "360P";
+            break;
+          case 282880:
+          case 283392:
+            str = "480P";
+            break;
+          case 356608:
+          case 357120:
+            str = "720P";
+            break;
+          default:
+            str = "不知什么清";
+            break;
+        };
+        $('<button style="margin-right:5px;">'+str+'</button>').appendTo("#xl_button_box").click(function() {
+          $("#xl_button_box button").each(function(n, e) {
+            e = $(e);
+            e.text(e.text().replace("• ", ""));
+          });
+          var _this = $(this);
+          _this.text("• "+_this.text());
+          play(n.vod_url); 
         });
-        var _this = $(this);
-        _this.text("• "+_this.text());
-        play(n.vod_url); 
       });
-    });
-
-    var tmp = $("#xl_button_box button:last");
-    tmp.text("• "+tmp.text());
-    play(list[list.length-1].vod_url);
-  }
+  
+      var tmp = $("#xl_button_box button:last");
+      tmp.text("• "+tmp.text());
+      play(list[list.length-1].vod_url);
+    }
+  })
 };
 
 function play_with_mplayer(url) {
