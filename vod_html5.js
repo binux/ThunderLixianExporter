@@ -23,7 +23,7 @@ function html5player() {
     userid: XL_CLOUD_FX_INSTANCE.user.u,
     sessionid: XL_CLOUD_FX_INSTANCE.user.s,
     from: 'vlist',
-  }), function(data) {
+  }, function(data) {
       var list = data.vodinfo_list
       $("#XL_CLOUD_VOD_PLAYER").empty();
       if (list.length == 0) {
