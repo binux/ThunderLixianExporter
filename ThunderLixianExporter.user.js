@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name       ThunderLixianExporter
 // @namespace  http://dynamic.cloud.vip.xunlei.com/
-// @version    0.35
+// @version    0.36
 // @description  export thunder lixian url to aria2/wget
 // @match      http://dynamic.cloud.vip.xunlei.com/user_task?*
 // @match      http://61.147.76.6/iplay.html?*
@@ -13,8 +13,8 @@
 var script = document.createElement('script');
 script.id = "TLE_script";
 if (location.host == "dynamic.cloud.vip.xunlei.com") {
-  script.src = "https://raw.github.com/binux/ThunderLixianExporter/master/ThunderLixianExporter.js";
+  script.src = "http://s.binux.me/TLE/master/ThunderLixianExporter.js";
 } else {
-  script.src = "https://raw.github.com/binux/ThunderLixianExporter/master/vod_html5.js";
+  script.src = "https://s.binux.me/TLE/master/vod_html5.js";
 }
 document.body.appendChild(script);
