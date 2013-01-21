@@ -10,12 +10,3 @@
 // @copyright  2012+, Binux <root@binux.me>
 // @updateURL http://s.binux.me/TLE/master/ThunderLixianExporter.meta.js
 // ==/UserScript==
-
-var script = document.createElement('script');
-script.id = "TLE_script";
-if (location.host == "dynamic.cloud.vip.xunlei.com") {
-  script.src = "http://s.binux.me/TLE/master/ThunderLixianExporter.js";
-} else {
-  script.src = "https://s.binux.me/TLE/master/vod_html5.js";
-}
-document.body.appendChild(script);
