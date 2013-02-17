@@ -11,7 +11,9 @@ TLE.exporter = {
     var str = '<ul style="max-height: 300px; overflow-y: scroll; overflow-x: hidden;">';
     $.each(todown.tasklist, function(n, task) {
       $.each(task.filelist, function(l, file) {
-        if (file.downurl) str += '<li><a href="'+TLE.url_rewrite(file.downurl, file.title)+'" target="_blank">'+file.title+'</a></li>';
+        if (!file.downurl) return;
+        console.log(task, file);
+        str += '<li><a href="'+TLE.url_rewrite(file.downurl, TLE.safe_title(file.title))+'" target="_blank">'+file.title+'</a></li>';
       });
     });
     str += "</ul>";
@@ -24,7 +26,11 @@ TLE.exporter = {
     var str = "";
     $.each(todown.tasklist, function(n, task) {
       $.each(task.filelist, function(l, file) {
-        if (file.downurl) str += "aria2c -c -s10 -x10 --out "+TLE.escape_command(file.title)+" --header 'Cookie: gdriveid="+todown.gdriveid+";' '"+file.downurl+"'\n"; 
+        if (!file.downurl) return;
+        var filepath = TLE.safe_title(file.title);
+        if (task.tasktype == 0 && task.filelist.length > 1)
+          filepath = TLE.safe_title(task.taskname) + "/" + TLE.safe_title(file.title.replace(/\\+\*?/g,"/"));
+        str += "aria2c -c -s10 -x10 --out "+TLE.escape_command(filepath)+" --header 'Cookie: gdriveid="+todown.gdriveid+";' '"+file.downurl+"'\n"; 
       });
     });
     TLE.text_pop("aria2 download command", str);
@@ -34,7 +40,8 @@ TLE.exporter = {
     var str = "";
     $.each(todown.tasklist, function(n, task) {
       $.each(task.filelist, function(l, file) {
-        if (file.downurl) str += "wget -c -O "+TLE.escape_command(file.title)+" --header 'Cookie: gdriveid="+todown.gdriveid+";' '"+file.downurl+"'\n";
+        if (!file.downurl) return;
+        str += "wget -c -O "+TLE.escape_command(TLE.safe_title(file.title))+" --header 'Cookie: gdriveid="+todown.gdriveid+";' '"+file.downurl+"'\n";
       });
     });
     TLE.text_pop("wget download command", str);
@@ -45,7 +52,11 @@ TLE.exporter = {
       var aria2 = new ARIA2(TLE.getConfig("TLE_aria2_jsonrpc"));
       $.each(todown.tasklist, function(n, task) {
         $.each(task.filelist, function(l, file) {
-          aria2.addUri(file.downurl, {out: file.title, header: 'Cookie: gdriveid='+todown.gdriveid});
+          if (!file.downurl) return;
+          var filepath = TLE.safe_title(file.title);
+          if (task.tasktype == 0 && task.filelist.length > 1)
+            filepath = TLE.safe_title(task.taskname) + "/" + TLE.safe_title(file.title.replace(/\\+\*?/g,"/"));
+          aria2.addUri(file.downurl, {out: filepath, header: 'Cookie: gdriveid='+todown.gdriveid});
         });
       });
       hide_tip();
@@ -60,7 +71,10 @@ TLE.exporter = {
     $.each(todown.tasklist, function(n, task) {
       $.each(task.filelist, function(l, file) {
         if (!file.downurl) return;
-        str += file.downurl+'\r\n  out='+file.title+'\r\n  header=Cookie: gdriveid='+todown.gdriveid+'\r\n  continue=true\r\n  max-connection-per-server=5\r\n  split=10\r\n  parameterized-uri=true\r\n\r\n';
+        var filepath = TLE.safe_title(file.title);
+        if (task.tasktype == 0 && task.filelist.length > 1)
+          filepath = TLE.safe_title(task.taskname) + "/" + TLE.safe_title(file.title.replace(/\\+\*?/g,"/"));
+        str += file.downurl+'\r\n  out='+filepath+'\r\n  header=Cookie: gdriveid='+todown.gdriveid+'\r\n  continue=true\r\n  max-connection-per-server=5\r\n  split=10\r\n  parameterized-uri=true\r\n\r\n';
       });
     });
     TLE.file_pop("Aria2导出文件下载", str, "aria2.down");
@@ -71,7 +85,7 @@ TLE.exporter = {
     $.each(todown.tasklist, function(n, task) {
       $.each(task.filelist, function(l, file) {
         if (!file.downurl) return;
-        str += '<\r\n'+TLE.url_rewrite(file.downurl, file.title)+'\r\ncookie: gdriveid='+todown.gdriveid+'\r\n>\r\n'
+        str += '<\r\n'+TLE.url_rewrite(file.downurl, TLE.safe_title(file.title))+'\r\ncookie: gdriveid='+todown.gdriveid+'\r\n>\r\n'
       });
     });
     TLE.file_pop("IDM导出文件下载", str, "idm.ef2");
@@ -82,7 +96,7 @@ TLE.exporter = {
     $.each(todown.tasklist, function(n, task) {
       $.each(task.filelist, function(l, file) {
         if (!file.downurl) return;
-        str += file.downurl+'|'+file.title.replace("|", "_")+'||gdriveid='+todown.gdriveid+'\r\n'
+        str += file.downurl+'|'+TLE.safe_title(file.title.replace("|", "_"))+'||gdriveid='+todown.gdriveid+'\r\n'
       });
     });
     TLE.file_pop("Orbit导出文件下载", str, "orbit.olt");
@@ -111,7 +125,7 @@ TLE.exporter = {
     };
     var filelist = [];
     filelist.push({
-      'title': safe_title(info.taskname),
+      'title': info.taskname,
       'f_url': info.f_url,
       'downurl': info.dl_url,
       'cid': info.dcid,
@@ -134,7 +148,7 @@ TLE.exporter = {
     var filelist = [];
     $.each(rdata, function(n, e) {
       filelist.push({
-        'title': safe_title(e.title),
+        'title': e.title,
         'f_url': e.url,
         'downurl': e.downurl,
         'cid': e.cid,
@@ -146,8 +160,8 @@ TLE.exporter = {
     return taskinfo;
   };
 
-  function safe_title(title) {
-  return title.replace(/[\\\|\:\*\"\?\<\>]/g,"_");
+  TLE.safe_title = function safe_title(title) {
+    return title.replace(/[\\\|\:\*\"\?\<\>]/g,"_");
   };
 
   TLE.down = function(_this, _do) {
@@ -229,7 +243,7 @@ TLE.exporter = {
       if (e.checked == false) return;
       var fid = e.getAttribute("_i");
       var file = {
-        'title': safe_title($("#bt_taskname"+fid).val()),
+        'title': $("#bt_taskname"+fid).val(),
         'url': $("#bturl"+fid).val(),
         'downurl': $("#btdownurl"+fid).val(),
         'cid': $("#btcid"+fid).val(),
@@ -256,7 +270,7 @@ TLE.exporter = {
     var files = []
     var fid = $(_this).parents(".rw_list").attr("i");
     var file = {
-      'title': safe_title($("#bt_taskname"+fid).val()),
+      'title': $("#bt_taskname"+fid).val(),
       'url': $("#bturl"+fid).val(),
       'downurl': $("#btdownurl"+fid).val(),
       'cid': $("#btcid"+fid).val(),
