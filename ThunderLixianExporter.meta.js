@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name       ThunderLixianExporter
 // @namespace  http://dynamic.cloud.vip.xunlei.com/
-// @version    0.37
+// @version    0.40
 // @description  export thunder lixian url to aria2/wget
 // @match      http://dynamic.cloud.vip.xunlei.com/user_task?*
 // @match      http://61.147.76.6/iplay.html?*

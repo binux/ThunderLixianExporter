@@ -3,7 +3,7 @@
 //         http://binux.me
 // Created on Fri 20 Jul 2012 11:43:22 AM CST
 
-var TLE = TLE || {};
+TLE = {};
 
 TLE.exporter = {
   '复制链接': function(todown) {
@@ -12,7 +12,6 @@ TLE.exporter = {
     $.each(todown.tasklist, function(n, task) {
       $.each(task.filelist, function(l, file) {
         if (!file.downurl) return;
-        console.log(task, file);
         str += '<li><a href="'+TLE.url_rewrite(file.downurl, TLE.safe_title(file.title))+'" target="_blank">'+file.title+'</a></li>';
       });
     });
