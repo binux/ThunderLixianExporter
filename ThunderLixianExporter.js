@@ -95,7 +95,7 @@ TLE.exporter = {
     $.each(todown.tasklist, function(n, task) {
       $.each(task.filelist, function(l, file) {
         if (!file.downurl) return;
-        str += file.downurl+'|'+TLE.safe_title(file.title.replace("|", "_"))+'||gdriveid='+todown.gdriveid+'\r\n'
+        str += TLE.url_rewrite(file.downurl, TLE.safe_title(file.title))+'|'+TLE.safe_title(file.title.replace("|", "_"))+'||gdriveid='+todown.gdriveid+'\r\n'
       });
     });
     TLE.file_pop("Orbit导出文件下载", str, "orbit.olt");

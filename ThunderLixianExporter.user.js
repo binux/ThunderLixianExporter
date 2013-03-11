@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name       ThunderLixianExporter
 // @namespace  http://dynamic.cloud.vip.xunlei.com/
-// @version    0.40
+// @version    0.41
 // @description  export thunder lixian url to aria2/wget
 // @match      http://dynamic.cloud.vip.xunlei.com/user_task?*
 // @match      http://61.147.76.6/iplay.html?*
@@ -110,7 +110,7 @@ TLE.exporter = {
     $.each(todown.tasklist, function(n, task) {
       $.each(task.filelist, function(l, file) {
         if (!file.downurl) return;
-        str += file.downurl+'|'+TLE.safe_title(file.title.replace("|", "_"))+'||gdriveid='+todown.gdriveid+'\r\n'
+        str += TLE.url_rewrite(file.downurl, TLE.safe_title(file.title))+'|'+TLE.safe_title(file.title.replace("|", "_"))+'||gdriveid='+todown.gdriveid+'\r\n'
       });
     });
     TLE.file_pop("Orbit导出文件下载", str, "orbit.olt");
