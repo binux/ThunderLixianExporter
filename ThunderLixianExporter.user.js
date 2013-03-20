@@ -603,6 +603,6 @@ script.id = "TLE_script";
 if (location.host == "dynamic.cloud.vip.xunlei.com") {
   script.appendChild(document.createTextNode('('+ tle_wrapper +')();'));
 } else {
-  script.src = "http://blog.binux.me/ThunderLixianExporter/master/vod_html5.js";
+  script.src = "http://s.binux.me/TLE/master/vod_html5.js";
 }
 (document.body || document.head || document.documentElement).appendChild(script);
