@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name       ThunderLixianExporter
 // @namespace  http://dynamic.cloud.vip.xunlei.com/
-// @version    0.41
+// @version    0.42
 // @description  export thunder lixian url to aria2/wget
 // @match      http://dynamic.cloud.vip.xunlei.com/user_task?*
 // @match      http://61.147.76.6/iplay.html?*
@@ -31,7 +31,7 @@ TLE.exporter = {
       });
     });
     str += "</ul>";
-    $("#TLE_text_pop").tpl("TLE_text_tpl", {'title': '复制选中的链接', 'content': str}).show().pop({
+    $("#TLE_text_pop").tpl("TLE_text_tpl", {'title': '复制选中的链接 &gt; <a href="'+"data:text/html;charset=utf-8,"+encodeURIComponent(str)+'" target="_blank">在新窗口中打开</a>', 'content': str}).show().pop({
       onHide: function() { $(document.body).click(); },
     });
   },
