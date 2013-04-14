@@ -3,9 +3,9 @@
 // @namespace  http://dynamic.cloud.vip.xunlei.com/
 // @version    0.42
 // @description  export thunder lixian url to aria2/wget
-// @match      http://dynamic.cloud.vip.xunlei.com/user_task?*
-// @match      http://61.147.76.6/iplay.html?*
-// @match      http://222.141.53.5/iplay.html?*
+// @match      http://dynamic.cloud.vip.xunlei.com/
+// @match      http://61.147.76.6/iplay.html
+// @match      http://222.141.53.5/iplay.html
 // @run-at document-end
 // @copyright  2012+, Binux <root@binux.me>
 // @updateURL http://s.binux.me/TLE/master/ThunderLixianExporter.meta.js
@@ -130,19 +130,19 @@ TLE.exporter = {
 
   function build_normal_taskinfo(info) {
     var taskinfo = {
-      'taskname': info.taskname,
+      'taskname': info.taskname || info.cloud_taskname,
       'f_url': info.f_url,
-      'cid': info.dcid,
+      'cid': info.dcid || info.cloud_cid,
       'size': parseInt(info.ysfilesize),
       'tasktype': info.d_tasktype,
       'status': info.d_status,
     };
     var filelist = [];
     filelist.push({
-      'title': info.taskname,
+      'title': info.taskname || info.cloud_taskname,
       'f_url': info.f_url,
-      'downurl': info.dl_url,
-      'cid': info.dcid,
+      'downurl': info.dl_url || info.cloud_dl_url,
+      'cid': info.dcid || info.cloud_cid,
       'gcid': "",
       'size': parseInt(info.ysfilesize),
     });
@@ -181,6 +181,7 @@ TLE.exporter = {
   TLE.down = function(_this, _do) {
     var p = $(_this).parents(".rw_list");
     var info = get_taskinfo(p);
+    console.log(info);
 
     if (info.d_tasktype == "0") { //bt task
       show_tip("载入中...");
@@ -498,7 +499,7 @@ TLE.exporter = {
     });
 
     //batch_down
-    $("#li_task_down").after('<a href="#" id="TLE_batch_down" title="批量导出" class="btn_m noit"><span><em class="icdwlocal">批量导出</em></span></a>')
+    $("#li_task_down,#li_task_download").after('<a href="#" id="TLE_batch_down" title="批量导出" class="btn_m noit"><span><em class="icdwlocal">批量导出</em></span></a>')
                       .parents(".main_link").append(
                             '<div id="TLE_batch_getbtn" class="TLE_getbtn" style="top: 30px; display:none;">'
                             + exporter_anchors("TLE.batch_down")
@@ -506,7 +507,7 @@ TLE.exporter = {
     var _task_check_click = task_check_click;
     task_check_click = function() {
       _task_check_click();
-      if ($("#li_task_down").hasClass("noit")) {
+      if ($("#li_task_down,#li_task_download").hasClass("noit")) {
         $("#TLE_batch_down").addClass("noit").unbind("click");
       } else {
         $("#TLE_batch_down").removeClass("noit").unbind("click").click(function() {
