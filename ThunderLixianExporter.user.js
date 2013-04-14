@@ -518,7 +518,7 @@ TLE.exporter = {
       };
       //console.log("task_check_click called");
     };
-    $('input[name=ck]').click(task_check_click);
+    $('input[name=ck],input#ckbutton').click(task_check_click);
 
     //bt_down
     $("#view_bt_list_nav_tpl").text($("#view_bt_list_nav_tpl").text().replace('取回本地</em></span></a>',
