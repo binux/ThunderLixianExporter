@@ -123,7 +123,11 @@ TLE.exporter = {
     var info = {};
     p.find("input").each(function(n, e) {
       var key = e.getAttribute("id").replace(taskid, "");
-      info[key] = e.getAttribute("value");
+      if (key === "taskname") {
+        info[key] = $("#tname_a" + taskid + " .namelink span").html()
+      } else {
+        info[key] = e.getAttribute("value");
+      }
     });
     return info;
   };
