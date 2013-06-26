@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name       ThunderLixianExporter
 // @namespace  http://dynamic.cloud.vip.xunlei.com/
-// @version    0.5
+// @version    0.51
 // @description  export thunder lixian url to aria2/wget
 // @match      http://dynamic.cloud.vip.xunlei.com/*
 // @match      http://61.147.76.6/iplay.html*
@@ -583,6 +583,7 @@ var ARIA2 = (function() {
 
     var xhr = new XMLHttpRequest();
     var auth = get_auth(jsonrpc_path);
+    jsonrpc_path = jsonrpc_path.replace(/^((?![^:@]+:[^:@\/]*@)[^:\/?#.]+:)?(\/\/)?(?:(?:[^:@]*(?::[^:@]*)?)?@)?(.*)/, '$1$2$3'); // auth string not allowed in url for firefox
     xhr.open("POST", jsonrpc_path+"?tm="+(new Date()).getTime().toString(), true);
     xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded; charset=UTF-8");
     if (auth) xhr.setRequestHeader("Authorization", "Basic "+btoa(auth));
