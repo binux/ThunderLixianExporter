@@ -568,6 +568,7 @@ var ARIA2 = (function() {
 
     var xhr = new XMLHttpRequest();
     var auth = get_auth(jsonrpc_path);
+    jsonrpc_path = jsonrpc_path.replace(/^((?![^:@]+:[^:@\/]*@)[^:\/?#.]+:)?(\/\/)?(?:(?:[^:@]*(?::[^:@]*)?)?@)?(.*)/, '$1$2$3'); // auth string not allowed in url for firefox
     xhr.open("POST", jsonrpc_path+"?tm="+(new Date()).getTime().toString(), true);
     xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded; charset=UTF-8");
     if (auth) xhr.setRequestHeader("Authorization", "Basic "+btoa(auth));
