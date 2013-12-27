@@ -100,6 +100,20 @@ TLE.exporter = {
     });
     TLE.file_pop("Orbit导出文件下载", str, "orbit.olt");
   },
+  'eagleget': function(todown) {
+    var ret = {tasks: []};
+    $.each(todown.tasklist, function(n, task) {
+      $.each(task.filelist, function(l, file) {
+        if (!file.downurl) return;
+        ret.tasks.push({
+          cookie: 'gdriveid='+todown.gdriveid,
+          fname: TLE.safe_title(file.title),
+          url: TLE.url_rewrite(file.downurl, TLE.safe_title(file.title))
+        });
+      });
+    });
+    TLE.file_pop("Eagleget导出文件下载(test)", JSON.stringify(ret), "eagleget.eg");
+  },
 };
 
 (function(TLE) {
@@ -366,6 +380,30 @@ TLE.exporter = {
     return result;
   };
 
+  //setting
+  TLE.getConfig = function(key) {
+    if (window.localStorage) {
+      return window.localStorage.getItem(key) || "";
+    } else {
+      return getCookie(key);
+    }
+  };
+  TLE.setConfig = function(key, value) {
+    if (window.localStorage) {
+      window.localStorage.setItem(key, value);
+    } else {
+      setGdCookie(key, value, 86400*365);
+    }
+  };
+  //set default config
+  if (TLE.getConfig("TLE_exporter") == "") {
+    var exporters = [];
+    for (var key in TLE.exporter) {
+      exporters.push(key);
+    };
+    TLE.setConfig("TLE_exporter", exporters.join("|"));
+  };
+
   function init() {
     //css
     $("head").append('<style>'
@@ -401,29 +439,6 @@ TLE.exporter = {
                             +'</div>'
                             +'<a href="#" class="close" title="关闭">关闭</a>'
                           +'</div>');
-    //setting
-    TLE.getConfig = function(key) {
-      if (window.localStorage) {
-        return window.localStorage.getItem(key) || "";
-      } else {
-        return getCookie(key);
-      }
-    };
-    TLE.setConfig = function(key, value) {
-      if (window.localStorage) {
-        window.localStorage.setItem(key, value);
-      } else {
-        setGdCookie(key, value, 86400*365);
-      }
-    };
-    //set default config
-    if (TLE.getConfig("TLE_exporter") == "") {
-      var exporters = [];
-      for (var key in TLE.exporter) {
-        exporters.push(key);
-      };
-      TLE.setConfig("TLE_exporter", exporters.join("|"));
-    };
     $("#setting_main_tpl").text($("#setting_main_tpl").text().replace(/(<\/div>\s+<div class="btnin">)/,
           '<div class="doline mag01"></div>'
             +'<h3 style="background-position: 0 -180px;">Thunder Lixian Exporter 设定</h3>'
@@ -548,6 +563,7 @@ TLE.exporter = {
     });
     $("div.TLE_get_btnbox").click(function(e){e.stopPropagation();});
   };
+
   init();
 })(TLE);
 
