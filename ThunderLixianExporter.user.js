@@ -615,6 +615,7 @@ var ARIA2 = (function() {
 } // end of wrapper
 
 function tle_lx3_wrapper() {
+seajs.use("jquery", function(){
 // vim: set et sw=2 ts=2 sts=2 ff=unix fenc=utf8:
 // Author: Binux<i@binux.me>
 //         http://binux.me
@@ -1150,6 +1151,7 @@ var ARIA2 = (function() {
     return this;
   }
 })();
+}); // end of seajs.use
 } // end of wrapper
 
 function onload(func) {
