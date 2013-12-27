@@ -1152,7 +1152,14 @@ var ARIA2 = (function() {
 })();
 } // end of wrapper
 
-$(function(){
+function onload(func) {
+    if (document.readyState === "complete") {
+      func();
+    } else {
+      window.addEventListener('load', func);
+    }
+}
+onload(function(){
   var script = document.createElement('script');
   script.id = "TLE_script";
   if (location.host == "dynamic.cloud.vip.xunlei.com") {
