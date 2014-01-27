@@ -123,7 +123,7 @@ TLE.exporter = {
       cid: $("#dcid"+taskid).val(),
       gcid: $("#gcid"+taskid).val(),
       size: parseInt($("#ysfilesize"+taskid).val()),
-      tasktype: $("#d_tasktype"+taskid).val(),
+      tasktype: parseInt($("#d_tasktype"+taskid).val()),
       status: $("#d_status"+taskid).val(),
     };
   }
@@ -145,7 +145,7 @@ TLE.exporter = {
       'f_url': info.f_url,
       'cid': info.dcid,
       'size': parseInt(info.ysfilesize),
-      'tasktype': info.d_tasktype,
+      'tasktype': parseInt(info.d_tasktype),
       'status': info.d_status,
     };
     var filelist = [];
@@ -414,7 +414,7 @@ TLE.exporter = {
       var bt_task_list = [], normal_task_list = [];
       $.each(taskids, function(n, taskid) {
         var d_status = $("#d_status"+taskid).val();
-        var d_tasktype = $("#d_tasktype"+taskid).val();
+        var d_tasktype = parseInt($("#d_tasktype"+taskid).val());
         var d_flag = $("#dflag"+taskid).val();
         if (d_flag != 4 && d_status == 2) {
           if (d_tasktype == 0) {
