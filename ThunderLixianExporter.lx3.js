@@ -187,7 +187,7 @@ TLE.exporter = {
     var info = get_taskinfo($("#tr_c"+taskid));
 
     var todown = {};
-    todown.gdriveid = getCookie("gdriveid");
+    todown.gdriveid = getCookie("gdriveid") || $("#cok").val();
     todown.tasklist = {};
     todown.tasklist[taskid] = build_bt_taskinfo(info, files);
     //console.log(todown);

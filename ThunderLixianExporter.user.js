@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name       ThunderLixianExporter
 // @namespace  http://dynamic.cloud.vip.xunlei.com/
-// @version    0.71
+// @version    0.72
 // @description  export thunder lixian url to aria2/wget
 // @match      http://dynamic.cloud.vip.xunlei.com/user_task*
 // @match      http://lixian.vip.xunlei.com/lx3_task.html*
@@ -805,7 +805,7 @@ TLE.exporter = {
     var info = get_taskinfo($("#tr_c"+taskid));
 
     var todown = {};
-    todown.gdriveid = getCookie("gdriveid");
+    todown.gdriveid = getCookie("gdriveid") || $("#cok").val();
     todown.tasklist = {};
     todown.tasklist[taskid] = build_bt_taskinfo(info, files);
     //console.log(todown);
