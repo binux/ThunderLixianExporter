@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name       ThunderLixianExporter
 // @namespace  http://dynamic.cloud.vip.xunlei.com/
-// @version    0.73
+// @version    0.75
 // @description  export thunder lixian url to aria2/wget
 // @match      http://dynamic.cloud.vip.xunlei.com/user_task*
 // @match      http://lixian.vip.xunlei.com/lx3_task.html*
@@ -825,16 +825,19 @@ TLE.exporter = {
   };
   TLE.file_pop = function(title, content, filename) {
     var url = "data:text/html;charset=utf-8,"+encodeURIComponent(content);
-    var content = '<div style="width: 100%; height: 100px;">'
-                    +'<div style="padding: 30px 0 0 30%;">'
-                      +'<a href="'+url+'" target="_blank" title="右键另存为" class="pop_btn" download="'+filename+'"><span><em class="TLE_icdwlocal">导出文件</em></span></a>'
-                      +(isChrome ? '' : '(右键另存为'+filename+')')
-                    +'</div>'
-                 +'</div>'
-    console.log(content);
-    $("#TLE_text_pop").tpl("TLE_text_tpl", {'title': title, 'content': content}).show().pop({
-      //onHide: function() { $(document.body).click(); },
-    });
+    if (isChrome) {
+      $('<a href="'+url+'" target="_blank" style="display:none;" download="'+filename+'"></a>').appendTo('body').get(0).click();
+    } else {
+      var content = '<div style="width: 100%; height: 100px;">'
+                      +'<div style="padding: 30px 0 0 30%;">'
+                        +'<a href="'+url+'" target="_blank" title="右键另存为" class="pop_btn" download="'+filename+'"><span><em class="TLE_icdwlocal">导出文件</em></span></a>'
+                        +(isChrome ? '' : '(右键另存为'+filename+')')
+                      +'</div>'
+                   +'</div>'
+      $("#TLE_text_pop").tpl("TLE_text_tpl", {'title': title, 'content': content}).show().pop({
+        //onHide: function() { $(document.body).click(); },
+      });
+    }
   };
   TLE.window_pop = function(title, content) {
     $("#TLE_text_pop").tpl("TLE_text_tpl", {'title': title, 'content': content}).show().pop({
