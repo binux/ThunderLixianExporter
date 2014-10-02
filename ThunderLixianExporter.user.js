@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name       ThunderLixianExporter
 // @namespace  http://dynamic.cloud.vip.xunlei.com/
-// @version    0.76
+// @version    0.78
 // @description  export thunder lixian url to aria2/wget
 // @include      http://dynamic.cloud.vip.xunlei.com/user_task*
 // @include      http://lixian.vip.xunlei.com/lx3_task.html*
@@ -590,19 +590,23 @@ var ARIA2 = (function() {
   };
 
   function request(jsonrpc_path, method, params) {
+    var xhr = new XMLHttpRequest();
+    var auth = get_auth(jsonrpc_path);
+    jsonrpc_path = jsonrpc_path.replace(/^((?![^:@]+:[^:@\/]*@)[^:\/?#.]+:)?(\/\/)?(?:(?:[^:@]*(?::[^:@]*)?)?@)?(.*)/, '$1$2$3'); // auth string not allowed in url for firefox
+
     var request_obj = {
       jsonrpc: jsonrpc_version,
       method: method,
       id: (new Date()).getTime().toString(),
     };
     if (params) request_obj['params'] = params;
+    if (auth && auth.indexOf('token:') == 0) params.unshift(auth);
 
-    var xhr = new XMLHttpRequest();
-    var auth = get_auth(jsonrpc_path);
-    jsonrpc_path = jsonrpc_path.replace(/^((?![^:@]+:[^:@\/]*@)[^:\/?#.]+:)?(\/\/)?(?:(?:[^:@]*(?::[^:@]*)?)?@)?(.*)/, '$1$2$3'); // auth string not allowed in url for firefox
     xhr.open("POST", jsonrpc_path+"?tm="+(new Date()).getTime().toString(), true);
     xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded; charset=UTF-8");
-    if (auth) xhr.setRequestHeader("Authorization", "Basic "+btoa(auth));
+    if (auth && auth.indexOf('token:') != 0) {
+      xhr.setRequestHeader("Authorization", "Basic "+btoa(auth));
+    }
     xhr.send(JSON.stringify(request_obj));
   };
 
@@ -617,7 +621,6 @@ var ARIA2 = (function() {
 } // end of wrapper
 
 function tle_lx3_wrapper() {
-seajs.use("jquery", function(){
 // vim: set et sw=2 ts=2 sts=2 ff=unix fenc=utf8:
 // Author: Binux<i@binux.me>
 //         http://binux.me
@@ -1132,19 +1135,23 @@ var ARIA2 = (function() {
   };
 
   function request(jsonrpc_path, method, params) {
+    var xhr = new XMLHttpRequest();
+    var auth = get_auth(jsonrpc_path);
+    jsonrpc_path = jsonrpc_path.replace(/^((?![^:@]+:[^:@\/]*@)[^:\/?#.]+:)?(\/\/)?(?:(?:[^:@]*(?::[^:@]*)?)?@)?(.*)/, '$1$2$3'); // auth string not allowed in url for firefox
+
     var request_obj = {
       jsonrpc: jsonrpc_version,
       method: method,
       id: (new Date()).getTime().toString(),
     };
     if (params) request_obj['params'] = params;
+    if (auth && auth.indexOf('token:') == 0) params.unshift(auth);
 
-    var xhr = new XMLHttpRequest();
-    var auth = get_auth(jsonrpc_path);
-    jsonrpc_path = jsonrpc_path.replace(/^((?![^:@]+:[^:@\/]*@)[^:\/?#.]+:)?(\/\/)?(?:(?:[^:@]*(?::[^:@]*)?)?@)?(.*)/, '$1$2$3'); // auth string not allowed in url for firefox
-    xhr.open("POST", jsonrpc_path+"?tm="+(new Date()).getTime().toString(), false);
+    xhr.open("POST", jsonrpc_path+"?tm="+(new Date()).getTime().toString(), true);
     xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded; charset=UTF-8");
-    if (auth) xhr.setRequestHeader("Authorization", "Basic "+btoa(auth));
+    if (auth && auth.indexOf('token:') != 0) {
+      xhr.setRequestHeader("Authorization", "Basic "+btoa(auth));
+    }
     xhr.send(JSON.stringify(request_obj));
   };
 
@@ -1156,7 +1163,6 @@ var ARIA2 = (function() {
     return this;
   }
 })();
-}); // end of seajs.use
 } // end of wrapper
 
 function onload(func) {

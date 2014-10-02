@@ -575,19 +575,23 @@ var ARIA2 = (function() {
   };
 
   function request(jsonrpc_path, method, params) {
+    var xhr = new XMLHttpRequest();
+    var auth = get_auth(jsonrpc_path);
+    jsonrpc_path = jsonrpc_path.replace(/^((?![^:@]+:[^:@\/]*@)[^:\/?#.]+:)?(\/\/)?(?:(?:[^:@]*(?::[^:@]*)?)?@)?(.*)/, '$1$2$3'); // auth string not allowed in url for firefox
+
     var request_obj = {
       jsonrpc: jsonrpc_version,
       method: method,
       id: (new Date()).getTime().toString(),
     };
     if (params) request_obj['params'] = params;
+    if (auth && auth.indexOf('token:') == 0) params.unshift(auth);
 
-    var xhr = new XMLHttpRequest();
-    var auth = get_auth(jsonrpc_path);
-    jsonrpc_path = jsonrpc_path.replace(/^((?![^:@]+:[^:@\/]*@)[^:\/?#.]+:)?(\/\/)?(?:(?:[^:@]*(?::[^:@]*)?)?@)?(.*)/, '$1$2$3'); // auth string not allowed in url for firefox
     xhr.open("POST", jsonrpc_path+"?tm="+(new Date()).getTime().toString(), true);
     xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded; charset=UTF-8");
-    if (auth) xhr.setRequestHeader("Authorization", "Basic "+btoa(auth));
+    if (auth && auth.indexOf('token:') != 0) {
+      xhr.setRequestHeader("Authorization", "Basic "+btoa(auth));
+    }
     xhr.send(JSON.stringify(request_obj));
   };
 
