@@ -187,14 +187,14 @@ TLE.exporter = {
       $.getJSON(INTERFACE_URL+"/fill_bt_list?tid="+info.input+"&g_net="+G_section+"&uid="+G_USERID+"&callback=?", function(data) {
         hide_tip();
         var todown = {};
-        todown.gdriveid = getCookie("gdriveid");
+        todown.gdriveid = $("#cok").val() || getCookie("gdriveid");
         todown.tasklist = {};
         todown.tasklist[info.input] = build_bt_taskinfo(info, data['Result'][info.input]);
         _do(todown);
       });
     } else {
       var todown = {}
-      todown.gdriveid = getCookie("gdriveid");
+      todown.gdriveid = $("#cok").val() || getCookie("gdriveid");
       todown.tasklist = {};
       todown.tasklist[info.input] = build_normal_taskinfo(info);
       _do(todown);

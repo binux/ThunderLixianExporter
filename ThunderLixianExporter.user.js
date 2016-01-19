@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name       ThunderLixianExporter
 // @namespace  http://dynamic.cloud.vip.xunlei.com/
-// @version    0.78
+// @version    0.78.1
 // @description  export thunder lixian url to aria2/wget
 // @include      http://dynamic.cloud.vip.xunlei.com/user_task*
 // @include      http://lixian.vip.xunlei.com/lx3_task.html*
@@ -202,14 +202,14 @@ TLE.exporter = {
       $.getJSON(INTERFACE_URL+"/fill_bt_list?tid="+info.input+"&g_net="+G_section+"&uid="+G_USERID+"&callback=?", function(data) {
         hide_tip();
         var todown = {};
-        todown.gdriveid = getCookie("gdriveid");
+        todown.gdriveid = $("#cok").val() || getCookie("gdriveid");
         todown.tasklist = {};
         todown.tasklist[info.input] = build_bt_taskinfo(info, data['Result'][info.input]);
         _do(todown);
       });
     } else {
       var todown = {}
-      todown.gdriveid = getCookie("gdriveid");
+      todown.gdriveid = $("#cok").val() || getCookie("gdriveid");
       todown.tasklist = {};
       todown.tasklist[info.input] = build_normal_taskinfo(info);
       _do(todown);
@@ -810,7 +810,7 @@ TLE.exporter = {
     var info = get_taskinfo($("#tr_c"+taskid));
 
     var todown = {};
-    todown.gdriveid = getCookie("gdriveid") || $("#cok").val();
+    todown.gdriveid = $("#cok").val() || getCookie("gdriveid");
     todown.tasklist = {};
     todown.tasklist[taskid] = build_bt_taskinfo(info, files);
     //console.log(todown);
