@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name       ThunderLixianExporter
 // @namespace  http://dynamic.cloud.vip.xunlei.com/
-// @version    0.78.1
+// @version    0.78.2
 // @description  export thunder lixian url to aria2/wget
 // @include      http://dynamic.cloud.vip.xunlei.com/user_task*
 // @include      http://lixian.vip.xunlei.com/lx3_task.html*
@@ -241,7 +241,7 @@ TLE.exporter = {
       $.getJSON(INTERFACE_URL+"/fill_bt_list?tid="+bt_task_list.join(",")+"&g_net="+G_section+"&uid="+G_USERID+"&callback=?", function(data) {
         hide_tip();
         var todown = {};
-        todown.gdriveid = getCookie("gdriveid");
+        todown.gdriveid = $("#cok").val() || getCookie("gdriveid");
         todown.tasklist = {};
         $.each(data['Result'], function(n, e) {
           var info = get_taskinfo($("#tr_c"+n));
@@ -255,7 +255,7 @@ TLE.exporter = {
       });
     } else {
       var todown = {};
-      todown.gdriveid = getCookie("gdriveid");
+      todown.gdriveid = $("#cok").val() || getCookie("gdriveid");
       todown.tasklist = {};
       $.each(normal_task_list, function(n, e) {
         var info = get_taskinfo($("#tr_c"+e));
@@ -285,7 +285,7 @@ TLE.exporter = {
     var info = get_taskinfo($("#tr_c"+taskid));
 
     var todown = {};
-    todown.gdriveid = getCookie("gdriveid");
+    todown.gdriveid = $("#cok").val() || getCookie("gdriveid");
     todown.tasklist = {};
     todown.tasklist[taskid] = build_bt_taskinfo(info, files);
     //console.log(todown);
@@ -311,7 +311,7 @@ TLE.exporter = {
     var info = get_taskinfo($("#tr_c"+taskid));
 
     var todown = {};
-    todown.gdriveid = getCookie("gdriveid");
+    todown.gdriveid = $("#cok").val() || getCookie("gdriveid");
     todown.tasklist = {};
     todown.tasklist[taskid] = build_bt_taskinfo(info, files);
     //console.log(todown);
@@ -997,7 +997,7 @@ TLE.exporter = {
     TLE.todown = {};
     window.thunder_download = function(taskid, type) {
       TLE.todown = {};
-      TLE.todown.gdriveid = getCookie("gdriveid") || $("#cok").val();
+      TLE.todown.gdriveid = $("#cok").val() || getCookie("gdriveid");
       if (type === 1) {
         // bt_down_one
         var taskinfo = {
@@ -1056,7 +1056,7 @@ TLE.exporter = {
         $.getJSON(INTERFACE_URL+"/fill_bt_list?tid="+bt_task_list.join(",")+"&g_net="+G_section+"&uid="+G_USERID+"&callback=?", function(data) {
           TLE.hide_tip();
           var todown = {};
-          todown.gdriveid = getCookie("gdriveid") || $("#cok").val();
+          todown.gdriveid = $("#cok").val() || getCookie("gdriveid");
           todown.tasklist = {};
           $.each(data['Result'], function(n, e) {
             var taskinfo = get_taskinfo(n);
@@ -1084,7 +1084,7 @@ TLE.exporter = {
         });
       } else {
         var todown = {};
-        todown.gdriveid = getCookie("gdriveid") || $("#cok").val();
+        todown.gdriveid = $("#cok").val() || getCookie("gdriveid");
         todown.tasklist = {};
         $.each(normal_task_list, function(n, e) {
           var taskinfo = get_taskinfo(e);
@@ -1104,7 +1104,7 @@ TLE.exporter = {
       });
 
       TLE.todown = {};
-      TLE.todown.gdriveid = getCookie("gdriveid") || $("#cok").val();
+      TLE.todown.gdriveid = $("#cok").val() || getCookie("gdriveid");
       var taskinfo = {
         taskname: $("#bt_info_list .title .w").text(),
         f_url: null,
