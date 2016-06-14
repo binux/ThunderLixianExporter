@@ -44,7 +44,7 @@ TLE.exporter = {
         var filepath = TLE.safe_title(file.title);
         if (task.tasktype == 0 && task.filelist.length > 1)
           filepath = TLE.safe_title(task.taskname) + "/" + TLE.safe_title(file.title.replace(/\\+\*?/g,"/"));
-        str += "aria2c -c -s10 -x10 --out "+TLE.escape_command(filepath)+" --header 'Cookie: gdriveid="+todown.gdriveid+";' '"+file.downurl+"'\n"; 
+        str += "aria2c -c -s10 -x10 --out "+TLE.escape_command(filepath)+" --header 'Cookie: gdriveid="+todown.gdriveid+";' '"+file.downurl+"'\n";
       });
     });
     TLE.text_pop("aria2 download command", str);
@@ -355,7 +355,7 @@ TLE.exporter = {
   TLE.multiple_server_fix = function(url) {
     return "'"+url.replace("gdl", "'{gdl,dl.{f,g,h,i,twin}}'")+"'";
   }
-  
+
   function encode_utf8(s) {
     return unescape( encodeURIComponent( s ) );
   };
@@ -410,6 +410,33 @@ TLE.exporter = {
       setGdCookie(key, value, 86400*365);
     }
   };
+  TLE.getServerList = function() {
+    var slstring = TLE.getConfig("TLE_aria2_jsonrpc_list");
+    if (slstring == '') {
+      slstring = '{}';
+    }
+    var sl = JSON.parse(slstring);
+    if (Object.keys(sl).length == 0) {
+      sl = {"Server": "http://localhost:6800/jsonrpc"};
+    }
+    return sl;
+  };
+  TLE.setServerList = function(serverList) {
+    debugger;
+    var sl = JSON.stringify(serverList);
+    var key = "TLE_aria2_jsonrpc_list";
+    if (window.localStorage) {
+      window.localStorage.setItem(key, sl);
+    } else {
+      setGdCookie(key, sl, 86400*365);
+    }
+    return JSON.stringify(serverList);
+  };
+  TLE.serverListChanged = function(serverList) {
+    return TLE.getConfig("TLE_aria2_jsonrpc_list") != JSON.stringify(serverList);
+  }
+
+
   //set default config
   if (TLE.getConfig("TLE_exporter") == "") {
     var exporters = [];
@@ -454,7 +481,7 @@ TLE.exporter = {
                             +'</div>'
                             +'<a href="#" class="close" title="关闭">关闭</a>'
                           +'</div>');
-    $("#setting_main_tpl").text($("#setting_main_tpl").text().replace(/(<\/div>\s+<div class="btnin">)/,
+    var text =
           '<div class="doline mag01"></div>'
             +'<h3 style="background-position: 0 -180px;">Thunder Lixian Exporter 设定</h3>'
             +'<ul>'
@@ -467,10 +494,17 @@ TLE.exporter = {
                 }
                 return str;
               })()+'</li>'
-              +'<li><b>Aria2 JSON-RPC Path</b></li>'
-              +'<li>Path: <input type="text" id="TLE_aria2_jsonrpc" style="width: 350px" value="'+TLE.getConfig("TLE_aria2_jsonrpc")+'"/></li>'
-            +'</ul>'
-          +'$1'));
+              +'<li><b>Aria2 JSON-RPC Path</b></li>';
+    var serverList = TLE.getServerList();
+    Object.keys(serverList).forEach(function(key){
+      text += '<li>Name: <input type="text" class="TLE_aria2_jsonrpc_name" style="width: 80px;" value="' + key + '"/>  Path: <input type="text" class="TLE_aria2_jsonrpc_path" style="width: 300px;" value="' + serverList[key] + '"/>  <a href="#" class="add_server_list" onclick="addServer(); return false;">增加服务器</a></li>' ;
+    });
+    text += '</ul>' + '$1';
+    window.addServer = function(){
+      var newInput = $('<li class="TLE_aria2_jsonrpc">Name: <input type="text" class="TLE_aria2_jsonrpc_name" style="width: 80px;" value=""/>  Path: <input type="text" class="TLE_aria2_jsonrpc_path" style="width: 300px;" value=""/>  <a href="#" class="add_server_list" onclick="addServer(); return false;">增加服务器</a></li>');
+      newInput.insertAfter($(event.target).parent());
+    };
+    $("#setting_main_tpl").text($("#setting_main_tpl").text().replace(/(<\/div>\s+<div class="btnin">)/, text));
     var _set_notice_submit = set_notice_submit;
     set_notice_submit = function(f) {
       _set_notice_submit(f);
@@ -479,10 +513,24 @@ TLE.exporter = {
         if (e.checked) enabled_exporter.push(e.name.replace(/^TLE_ck_/, ""));
       });
       var config_str = (enabled_exporter.length == 0) ? "_" : enabled_exporter.join("|");
-      var jsonrpc_path = $("#TLE_aria2_jsonrpc").val();
-      if (TLE.getConfig("TLE_exporter") != config_str || TLE.getConfig("TLE_aria2_jsonrpc") != jsonrpc_path) {
+      var jsonrpc_path_hash = {};
+      var default_name_order = 1;
+      $(".TLE_aria2_jsonrpc").each(function(){
+        debugger;
+        var path = $(this).find(".TLE_aria2_jsonrpc_path").text();
+        if (!path || /^\s*$/.test(path)) {
+          return;
+        }
+        var name = $(this).find(".TLE_aria2_jsonrpc_name").text();
+        if (!name || /^\s*$/.test(name)) {
+          name = "Server" + default_name_order;
+          default_name_order ++;
+        }
+        jsonrpc_path_hash[name] = path;
+      });
+      if (TLE.getConfig("TLE_exporter") != config_str || TLE.serverListChanged(jsonrpc_path_hash)) {
         TLE.setConfig("TLE_exporter", config_str);
-        TLE.setConfig("TLE_aria2_jsonrpc", jsonrpc_path);
+        TLE.setServerList(jsonrpc_path_hash);
         TS2.show('设置已生效',1);
         setTimeout(function(){
           setting.hide();
@@ -650,7 +698,7 @@ TLE.exporter = {
         var filepath = TLE.safe_title(file.title);
         if (task.tasktype === 0 && task.filelist.length > 1)
           filepath = TLE.safe_title(task.taskname) + "/" + TLE.safe_title(file.title.replace(/\\+\*?/g,"/"));
-        str += "aria2c -c -s10 -x10 --out "+TLE.escape_command(filepath)+" --header 'Cookie: gdriveid="+todown.gdriveid+";' '"+file.downurl+"'\n"; 
+        str += "aria2c -c -s10 -x10 --out "+TLE.escape_command(filepath)+" --header 'Cookie: gdriveid="+todown.gdriveid+";' '"+file.downurl+"'\n";
       });
     });
     TLE.text_pop("aria2 download command", str);
@@ -858,7 +906,7 @@ TLE.exporter = {
   TLE.multiple_server_fix = function(url) {
     return "'"+url.replace("gdl", "'{gdl,dl.{f,g,h,i,twin}}'")+"'";
   }
-  
+
   function encode_utf8(s) {
     return unescape( encodeURIComponent( s ) );
   };
