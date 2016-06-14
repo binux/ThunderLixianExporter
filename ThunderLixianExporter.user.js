@@ -413,16 +413,15 @@ TLE.exporter = {
   TLE.getServerList = function() {
     var slstring = TLE.getConfig("TLE_aria2_jsonrpc_list");
     if (slstring == '') {
-      slstring = '{}';
+      slstring = '[]';
     }
     var sl = JSON.parse(slstring);
-    if (Object.keys(sl).length == 0) {
-      sl = {"Server": "http://localhost:6800/jsonrpc"};
+    if (sl.length == 0) {
+      sl = [{"Server": "http://localhost:6800/jsonrpc"}];
     }
     return sl;
   };
   TLE.setServerList = function(serverList) {
-    debugger;
     var sl = JSON.stringify(serverList);
     var key = "TLE_aria2_jsonrpc_list";
     if (window.localStorage) {
@@ -495,9 +494,10 @@ TLE.exporter = {
                 return str;
               })()+'</li>'
               +'<li><b>Aria2 JSON-RPC Path</b></li>';
-    var serverList = TLE.getServerList();
-    Object.keys(serverList).forEach(function(key){
-      text += '<li>Name: <input type="text" class="TLE_aria2_jsonrpc_name" style="width: 80px;" value="' + key + '"/>  Path: <input type="text" class="TLE_aria2_jsonrpc_path" style="width: 300px;" value="' + serverList[key] + '"/>  <a href="#" class="add_server_list" onclick="addServer(); return false;">增加服务器</a></li>' ;
+    var serverLists = TLE.getServerList();
+    serverLists.forEach(function(serverList){
+      var key = Object.keys(serverList)[0];
+      text += '<li class="TLE_aria2_jsonrpc">Name: <input type="text" class="TLE_aria2_jsonrpc_name" style="width: 80px;" value="' + key + '"/>  Path: <input type="text" class="TLE_aria2_jsonrpc_path" style="width: 300px;" value="' + serverList[key] + '"/>  <a href="#" class="add_server_list" onclick="addServer(); return false;">增加服务器</a></li>' ;
     });
     text += '</ul>' + '$1';
     window.addServer = function(){
@@ -514,23 +514,33 @@ TLE.exporter = {
       });
       var config_str = (enabled_exporter.length == 0) ? "_" : enabled_exporter.join("|");
       var jsonrpc_path_hash = {};
+      var jsonrpc_path_array = [];
       var default_name_order = 1;
       $(".TLE_aria2_jsonrpc").each(function(){
-        debugger;
-        var path = $(this).find(".TLE_aria2_jsonrpc_path").text();
+        var path = $(this).find(".TLE_aria2_jsonrpc_path").val();
         if (!path || /^\s*$/.test(path)) {
           return;
         }
-        var name = $(this).find(".TLE_aria2_jsonrpc_name").text();
+        var name = $(this).find(".TLE_aria2_jsonrpc_name").val();
         if (!name || /^\s*$/.test(name)) {
+          while (true) {
+            var n = "Server" + default_name_order
+            if(jsonrpc_path_hash[n]) {
+              default_name_order ++;
+            } else {
+              break;
+            }
+          }
           name = "Server" + default_name_order;
           default_name_order ++;
         }
+
         jsonrpc_path_hash[name] = path;
+        jsonrpc_path_array.push({name: path})
       });
-      if (TLE.getConfig("TLE_exporter") != config_str || TLE.serverListChanged(jsonrpc_path_hash)) {
+      if (TLE.getConfig("TLE_exporter") != config_str || TLE.serverListChanged(jsonrpc_path_array)) {
         TLE.setConfig("TLE_exporter", config_str);
-        TLE.setServerList(jsonrpc_path_hash);
+        TLE.setServerList(jsonrpc_path_array);
         TS2.show('设置已生效',1);
         setTimeout(function(){
           setting.hide();
