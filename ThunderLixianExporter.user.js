@@ -61,9 +61,10 @@ TLE.exporter = {
     TLE.text_pop("wget download command", str);
   },
   "YAAW": function(todown) {
-    if (TLE.getConfig("TLE_aria2_jsonrpc")) {
+    var server_address = TLE.get_current_server_path();
+    if (server_address != undefined && server_address.length != 0) {
       show_tip("添加中...到YAAW界面查看是否添加成功");
-      var aria2 = new ARIA2(TLE.getConfig("TLE_aria2_jsonrpc"));
+      var aria2 = new ARIA2(server_address);
       $.each(todown.tasklist, function(n, task) {
         $.each(task.filelist, function(l, file) {
           if (!file.downurl) return;
@@ -192,6 +193,23 @@ TLE.exporter = {
     return title.replace(/[\\\|\:\*\"\?\<\>]/g,"_");
   };
 
+  // current server address
+  TLE.get_current_server_path = function() {
+    var countString = $(".TLE_batch_down_selected").attr("data-count")
+    if (countString == undefined || countString.length == 0) {
+      return "";
+    }
+    var count = parseInt(countString);
+    var s = TLE.getServerList()[count];
+    return s[Object.keys(s)[0]];
+  };
+
+  TLE.set_current_select_server = function(_this) {
+    $(".TLE_batch_down").removeClass("TLE_batch_down_selected");
+    var count = $(_this).parents(".TLE_getbtn").attr("data-count");
+    $("#TLE_batch_down" + count).addClass("TLE_batch_down_selected");
+  };
+
   TLE.down = function(_this, _do) {
     var p = $(_this).parents(".rw_list");
     var info = get_taskinfo(p);
@@ -217,6 +235,7 @@ TLE.exporter = {
   };
 
   TLE.batch_down = function(_this, _do) {
+    TLE.set_current_select_server(_this);
     var ck = document.getElementsByName("ck");
     var bt_task_list = [];
     var normal_task_list = [];
@@ -413,6 +432,10 @@ TLE.exporter = {
   TLE.getServerList = function() {
     var slstring = TLE.getConfig("TLE_aria2_jsonrpc_list");
     if (slstring == '') {
+      var oslstring = TLE.getConfig("TLE_aria2_jsonrpc");
+      if (oslstring != '') {
+        return [{"Server": oslstring}];
+      }
       slstring = '[]';
     }
     var sl = JSON.parse(slstring);
@@ -424,10 +447,13 @@ TLE.exporter = {
   TLE.setServerList = function(serverList) {
     var sl = JSON.stringify(serverList);
     var key = "TLE_aria2_jsonrpc_list";
+    var okey = "TLE_aria2_jsonrpc";
     if (window.localStorage) {
       window.localStorage.setItem(key, sl);
+      window.localStorage.setItem(okey, serverList[0][Object.keys(serverList[0])[0]]);
     } else {
       setGdCookie(key, sl, 86400*365);
+      setGdCookie(okey, serverList[0][Object.keys(serverList[0])[0]], 86400*365);
     }
     return JSON.stringify(serverList);
   };
@@ -464,7 +490,6 @@ TLE.exporter = {
           +'.TLE_icdwlocal { padding-left: 20px; display: inline-block; background: url(http://cloud.vip.xunlei.com/190/img/lx/bg_menu.png) no-repeat 0 999em; background-position: 0 -108px; }'
 
           +'.rwbtn.ic_redownloca { display: none !important; }'
-          +'.menu { width: 700px !important; }'
           // for thunder css
           +'.rwset {width:530px;}'
         +'</style>');
@@ -536,7 +561,9 @@ TLE.exporter = {
         }
 
         jsonrpc_path_hash[name] = path;
-        jsonrpc_path_array.push({name: path})
+        var hash = {};
+        hash[name] = path;
+        jsonrpc_path_array.push(hash);
       });
       if (TLE.getConfig("TLE_exporter") != config_str || TLE.serverListChanged(jsonrpc_path_array)) {
         TLE.setConfig("TLE_exporter", config_str);
@@ -572,20 +599,28 @@ TLE.exporter = {
     });
 
     //batch_down
-    $("#li_task_down,#li_task_download").after('<a href="#" id="TLE_batch_down" title="批量导出" class="btn_m noit"><span><em class="icdwlocal">批量导出</em></span></a>')
+    var serverLists = TLE.getServerList();
+    var length = serverLists.length;
+    serverLists.reverse();
+    serverLists.forEach(function(e, index){
+      var count = length - index - 1;
+      var key = Object.keys(e)[0];
+      $("#li_task_down,#li_task_download").after('<a href="#" id="TLE_batch_down' + count + '" data-count="' + count + '" title="导出' + key + '" class="TLE_batch_down btn_m noit"><span><em class="icdwlocal">导出' + key + '</em></span></a>')
                       .parents(".main_link").append(
-                            '<div id="TLE_batch_getbtn" class="TLE_getbtn" style="top: 30px; display:none;">'
+                            '<div id="TLE_batch_getbtn' + count + '" class="TLE_getbtn" style="top: 30px; display:none;" data-count="' + count + '">'
                             + exporter_anchors("TLE.batch_down")
                           + '</div>');
+    });
     var _task_check_click = task_check_click;
     task_check_click = function() {
       _task_check_click();
       if ($("#li_task_down,#li_task_download").hasClass("noit")) {
-        $("#TLE_batch_down").addClass("noit").unbind("click");
+        $(".TLE_batch_down").addClass("noit").unbind("click");
       } else {
-        $("#TLE_batch_down").removeClass("noit").unbind("click").click(function() {
-          $("#TLE_batch_getbtn").css("left", $("#TLE_batch_down").position().left);
-          $("#TLE_batch_getbtn").toggle();
+        $(".TLE_batch_down").removeClass("noit").unbind("click").click(function() {
+          var count = $(this).attr('data-count');
+          $("#TLE_batch_getbtn" + count).css("left", $(this).position().left);
+          $("#TLE_batch_getbtn" + count).toggle();
           return false;
         });
       };
