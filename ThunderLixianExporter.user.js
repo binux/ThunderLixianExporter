@@ -44,7 +44,7 @@ TLE.exporter = {
         var filepath = TLE.safe_title(file.title);
         if (task.tasktype == 0 && task.filelist.length > 1)
           filepath = TLE.safe_title(task.taskname) + "/" + TLE.safe_title(file.title.replace(/\\+\*?/g,"/"));
-        str += "aria2c -c -s10 -x10 --out "+TLE.escape_command(filepath)+" --header 'Cookie: gdriveid="+todown.gdriveid+";' '"+file.downurl+"'\n"; 
+        str += "aria2c -c -s10 -x10 --out "+TLE.escape_command(filepath)+" --header 'Cookie: gdriveid="+todown.gdriveid+";' '"+file.downurl+"'\n";
       });
     });
     TLE.text_pop("aria2 download command", str);
@@ -61,9 +61,10 @@ TLE.exporter = {
     TLE.text_pop("wget download command", str);
   },
   "YAAW": function(todown) {
-    if (TLE.getConfig("TLE_aria2_jsonrpc")) {
+    var server_address = TLE.get_current_server_path();
+    if (server_address != undefined && server_address.length != 0) {
       show_tip("添加中...到YAAW界面查看是否添加成功");
-      var aria2 = new ARIA2(TLE.getConfig("TLE_aria2_jsonrpc"));
+      var aria2 = new ARIA2(server_address);
       $.each(todown.tasklist, function(n, task) {
         $.each(task.filelist, function(l, file) {
           if (!file.downurl) return;
@@ -192,6 +193,22 @@ TLE.exporter = {
     return title.replace(/[\\\|\:\*\"\?\<\>]/g,"_");
   };
 
+  // current server address
+  TLE.get_current_server_path = function() {
+    var countString = TLE.getConfig("TLE_aria2_selected_server")
+    if (countString == undefined || countString.length == 0) {
+      return "";
+    }
+    var count = parseInt(countString);
+    var s = TLE.getServerList()[count];
+    return s[Object.keys(s)[0]];
+  };
+
+  TLE.set_current_select_server = function(_this) {
+    var count = $(_this).parents(".TLE_getbtn").attr("data-count");
+    TLE.setConfig("TLE_aria2_selected_server", count)
+  };
+
   TLE.down = function(_this, _do) {
     var p = $(_this).parents(".rw_list");
     var info = get_taskinfo(p);
@@ -217,6 +234,7 @@ TLE.exporter = {
   };
 
   TLE.batch_down = function(_this, _do) {
+    TLE.set_current_select_server(_this);
     var ck = document.getElementsByName("ck");
     var bt_task_list = [];
     var normal_task_list = [];
@@ -266,6 +284,7 @@ TLE.exporter = {
   };
 
   TLE.bt_down = function(_this, _do) {
+    TLE.set_current_select_server(_this);
     var ck = document.getElementsByName("bt_list_ck");
     var files = [];
     $.each(ck, function(n, e) {
@@ -355,7 +374,7 @@ TLE.exporter = {
   TLE.multiple_server_fix = function(url) {
     return "'"+url.replace("gdl", "'{gdl,dl.{f,g,h,i,twin}}'")+"'";
   }
-  
+
   function encode_utf8(s) {
     return unescape( encodeURIComponent( s ) );
   };
@@ -410,6 +429,39 @@ TLE.exporter = {
       setGdCookie(key, value, 86400*365);
     }
   };
+  TLE.getServerList = function() {
+    var slstring = TLE.getConfig("TLE_aria2_jsonrpc_list");
+    if (slstring == '') {
+      var oslstring = TLE.getConfig("TLE_aria2_jsonrpc");
+      if (oslstring != '') {
+        return [{"Server": oslstring}];
+      }
+      slstring = '[]';
+    }
+    var sl = JSON.parse(slstring);
+    if (sl.length == 0) {
+      sl = [{"Server": "http://localhost:6800/jsonrpc"}];
+    }
+    return sl;
+  };
+  TLE.setServerList = function(serverList) {
+    var sl = JSON.stringify(serverList);
+    var key = "TLE_aria2_jsonrpc_list";
+    var okey = "TLE_aria2_jsonrpc";
+    if (window.localStorage) {
+      window.localStorage.setItem(key, sl);
+      window.localStorage.setItem(okey, serverList[0][Object.keys(serverList[0])[0]]);
+    } else {
+      setGdCookie(key, sl, 86400*365);
+      setGdCookie(okey, serverList[0][Object.keys(serverList[0])[0]], 86400*365);
+    }
+    return JSON.stringify(serverList);
+  };
+  TLE.serverListChanged = function(serverList) {
+    return TLE.getConfig("TLE_aria2_jsonrpc_list") != JSON.stringify(serverList);
+  }
+
+
   //set default config
   if (TLE.getConfig("TLE_exporter") == "") {
     var exporters = [];
@@ -438,7 +490,6 @@ TLE.exporter = {
           +'.TLE_icdwlocal { padding-left: 20px; display: inline-block; background: url(http://cloud.vip.xunlei.com/190/img/lx/bg_menu.png) no-repeat 0 999em; background-position: 0 -108px; }'
 
           +'.rwbtn.ic_redownloca { display: none !important; }'
-          +'.menu { width: 700px !important; }'
           // for thunder css
           +'.rwset {width:530px;}'
         +'</style>');
@@ -454,7 +505,7 @@ TLE.exporter = {
                             +'</div>'
                             +'<a href="#" class="close" title="关闭">关闭</a>'
                           +'</div>');
-    $("#setting_main_tpl").text($("#setting_main_tpl").text().replace(/(<\/div>\s+<div class="btnin">)/,
+    var text =
           '<div class="doline mag01"></div>'
             +'<h3 style="background-position: 0 -180px;">Thunder Lixian Exporter 设定</h3>'
             +'<ul>'
@@ -467,10 +518,18 @@ TLE.exporter = {
                 }
                 return str;
               })()+'</li>'
-              +'<li><b>Aria2 JSON-RPC Path</b></li>'
-              +'<li>Path: <input type="text" id="TLE_aria2_jsonrpc" style="width: 350px" value="'+TLE.getConfig("TLE_aria2_jsonrpc")+'"/></li>'
-            +'</ul>'
-          +'$1'));
+              +'<li><b>Aria2 JSON-RPC Path</b></li>';
+    var serverLists = TLE.getServerList();
+    serverLists.forEach(function(serverList){
+      var key = Object.keys(serverList)[0];
+      text += '<li class="TLE_aria2_jsonrpc">Name: <input type="text" class="TLE_aria2_jsonrpc_name" style="width: 80px;" value="' + key + '"/>  Path: <input type="text" class="TLE_aria2_jsonrpc_path" style="width: 300px;" value="' + serverList[key] + '"/>  <a href="#" class="add_server_list" onclick="addServer(); return false;">增加服务器</a></li>' ;
+    });
+    text += '</ul>' + '$1';
+    window.addServer = function(){
+      var newInput = $('<li class="TLE_aria2_jsonrpc">Name: <input type="text" class="TLE_aria2_jsonrpc_name" style="width: 80px;" value=""/>  Path: <input type="text" class="TLE_aria2_jsonrpc_path" style="width: 300px;" value=""/>  <a href="#" class="add_server_list" onclick="addServer(); return false;">增加服务器</a></li>');
+      newInput.insertAfter($(event.target).parent());
+    };
+    $("#setting_main_tpl").text($("#setting_main_tpl").text().replace(/(<\/div>\s+<div class="btnin">)/, text));
     var _set_notice_submit = set_notice_submit;
     set_notice_submit = function(f) {
       _set_notice_submit(f);
@@ -479,10 +538,36 @@ TLE.exporter = {
         if (e.checked) enabled_exporter.push(e.name.replace(/^TLE_ck_/, ""));
       });
       var config_str = (enabled_exporter.length == 0) ? "_" : enabled_exporter.join("|");
-      var jsonrpc_path = $("#TLE_aria2_jsonrpc").val();
-      if (TLE.getConfig("TLE_exporter") != config_str || TLE.getConfig("TLE_aria2_jsonrpc") != jsonrpc_path) {
+      var jsonrpc_path_hash = {};
+      var jsonrpc_path_array = [];
+      var default_name_order = 1;
+      $(".TLE_aria2_jsonrpc").each(function(){
+        var path = $(this).find(".TLE_aria2_jsonrpc_path").val();
+        if (!path || /^\s*$/.test(path)) {
+          return;
+        }
+        var name = $(this).find(".TLE_aria2_jsonrpc_name").val();
+        if (!name || /^\s*$/.test(name)) {
+          while (true) {
+            var n = "Server" + default_name_order
+            if(jsonrpc_path_hash[n]) {
+              default_name_order ++;
+            } else {
+              break;
+            }
+          }
+          name = "Server" + default_name_order;
+          default_name_order ++;
+        }
+
+        jsonrpc_path_hash[name] = path;
+        var hash = {};
+        hash[name] = path;
+        jsonrpc_path_array.push(hash);
+      });
+      if (TLE.getConfig("TLE_exporter") != config_str || TLE.serverListChanged(jsonrpc_path_array)) {
         TLE.setConfig("TLE_exporter", config_str);
-        TLE.setConfig("TLE_aria2_jsonrpc", jsonrpc_path);
+        TLE.setServerList(jsonrpc_path_array);
         TS2.show('设置已生效',1);
         setTimeout(function(){
           setting.hide();
@@ -514,20 +599,29 @@ TLE.exporter = {
     });
 
     //batch_down
-    $("#li_task_down,#li_task_download").after('<a href="#" id="TLE_batch_down" title="批量导出" class="btn_m noit"><span><em class="icdwlocal">批量导出</em></span></a>')
+    var serverLists = TLE.getServerList();
+    var length = serverLists.length;
+    serverLists.reverse();
+    serverLists.forEach(function(e, index){
+      var count = length - index - 1;
+      var key = Object.keys(e)[0];
+      $("#li_task_down,#li_task_download").after('<a href="#" id="TLE_batch_down' + count + '" data-count="' + count + '" title="导出' + key + '" class="TLE_batch_down btn_m noit"><span><em class="icdwlocal">导出' + key + '</em></span></a>')
                       .parents(".main_link").append(
-                            '<div id="TLE_batch_getbtn" class="TLE_getbtn" style="top: 30px; display:none;">'
+                            '<div id="TLE_batch_getbtn' + count + '" class="TLE_getbtn" style="top: 30px; display:none;" data-count="' + count + '">'
                             + exporter_anchors("TLE.batch_down")
                           + '</div>');
+    });
+
     var _task_check_click = task_check_click;
     task_check_click = function() {
       _task_check_click();
       if ($("#li_task_down,#li_task_download").hasClass("noit")) {
-        $("#TLE_batch_down").addClass("noit").unbind("click");
+        $(".TLE_batch_down").addClass("noit").unbind("click");
       } else {
-        $("#TLE_batch_down").removeClass("noit").unbind("click").click(function() {
-          $("#TLE_batch_getbtn").css("left", $("#TLE_batch_down").position().left);
-          $("#TLE_batch_getbtn").toggle();
+        $(".TLE_batch_down").removeClass("noit").unbind("click").click(function() {
+          var count = $(this).attr('data-count');
+          $("#TLE_batch_getbtn" + count).css("left", $(this).position().left);
+          $("#TLE_batch_getbtn" + count).toggle();
           return false;
         });
       };
@@ -536,12 +630,20 @@ TLE.exporter = {
     $('input[name=ck],input#ckbutton').click(task_check_click);
 
     //bt_down
-    $("#view_bt_list_nav_tpl").text($("#view_bt_list_nav_tpl").text().replace('取回本地</em></span></a>',
-          '取回本地</em></span></a>'
-          +'<a href="#" class="btn_m noit" title="批量导出" id="TLE_bt_down"><span><em class="icdwlocal">批量导出</em></span></a>'
-          +'<div id="TLE_bt_getbtn" class="TLE_getbtn" style="top: 30px; display:none;">'
-            + exporter_anchors("TLE.bt_down")
-          + '</div>'));
+
+    serverLists.reverse();
+    var btListNavTplText = '取回本地</em></span></a>';
+    serverLists.forEach(function(e, index){
+      var count = index;
+      var key = Object.keys(e)[0];
+      btListNavTplText += '<a href="#" id="TLE_bt_down' + count + '" data-count="' + count + '" title="导出' + key + '" class="TLE_bt_down btn_m noit"><span><em class="icdwlocal">导出' + key + '</em></span></a>'
+      + '<div id="TLE_bt_getbtn' + count + '" class="TLE_bt_getbtn TLE_getbtn" style="top: 30px; display:none;" data-count="' + count + '">'
+      + exporter_anchors("TLE.bt_down")
+      + '</div>';
+    });
+
+    $("#view_bt_list_nav_tpl").text($("#view_bt_list_nav_tpl").text().replace('取回本地</em></span></a>', btListNavTplText));
+
     $("#view_bt_list_tpl").text($("#view_bt_list_tpl").text().replace('ic_redownloca" title="">取回本地</a>',
         'ic_redownloca" title="">取回本地</a>'
         +'<div class="TLE_get_btnbox">'
@@ -557,11 +659,12 @@ TLE.exporter = {
     bt_view_nav = function() {
       _bt_view_nav();
       if ($("#view_bt_list_nav_down").hasClass("noit")) {
-        $("#TLE_bt_down").addClass("noit").unbind("click");
+        $(".TLE_bt_down").addClass("noit").unbind("click");
       } else {
-        $("#TLE_bt_down").removeClass("noit").unbind("click").click(function() {
-          $("#TLE_bt_getbtn").css("left", $("#TLE_bt_down").position().left);
-          $("#TLE_bt_getbtn").toggle();
+        $(".TLE_bt_down").removeClass("noit").unbind("click").click(function() {
+          var count = $(this).attr('data-count');
+          $("#TLE_bt_getbtn" + count).css("left", $(this).position().left);
+          $("#TLE_bt_getbtn" + count).toggle();
           return false;
         });
       };
@@ -650,7 +753,7 @@ TLE.exporter = {
         var filepath = TLE.safe_title(file.title);
         if (task.tasktype === 0 && task.filelist.length > 1)
           filepath = TLE.safe_title(task.taskname) + "/" + TLE.safe_title(file.title.replace(/\\+\*?/g,"/"));
-        str += "aria2c -c -s10 -x10 --out "+TLE.escape_command(filepath)+" --header 'Cookie: gdriveid="+todown.gdriveid+";' '"+file.downurl+"'\n"; 
+        str += "aria2c -c -s10 -x10 --out "+TLE.escape_command(filepath)+" --header 'Cookie: gdriveid="+todown.gdriveid+";' '"+file.downurl+"'\n";
       });
     });
     TLE.text_pop("aria2 download command", str);
@@ -667,9 +770,10 @@ TLE.exporter = {
     TLE.text_pop("wget download command", str);
   },
   "YAAW": function(todown) {
-    if (TLE.getConfig("TLE_aria2_jsonrpc")) {
+    var server_address = TLE.get_current_server_path();
+    if (server_address != undefined && server_address.length != 0) {
       TLE.tip("添加中...到YAAW界面查看是否添加成功");
-      var aria2 = new ARIA2(TLE.getConfig("TLE_aria2_jsonrpc"));
+      var aria2 = new ARIA2(server_address);
       $.each(todown.tasklist, function(n, task) {
         $.each(task.filelist, function(l, file) {
           if (!file.downurl) return;
@@ -858,7 +962,7 @@ TLE.exporter = {
   TLE.multiple_server_fix = function(url) {
     return "'"+url.replace("gdl", "'{gdl,dl.{f,g,h,i,twin}}'")+"'";
   }
-  
+
   function encode_utf8(s) {
     return unescape( encodeURIComponent( s ) );
   };
