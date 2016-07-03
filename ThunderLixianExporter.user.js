@@ -195,7 +195,7 @@ TLE.exporter = {
 
   // current server address
   TLE.get_current_server_path = function() {
-    var countString = $(".TLE_batch_down_selected").attr("data-count")
+    var countString = TLE.getConfig("TLE_aria2_selected_server")
     if (countString == undefined || countString.length == 0) {
       return "";
     }
@@ -205,9 +205,8 @@ TLE.exporter = {
   };
 
   TLE.set_current_select_server = function(_this) {
-    $(".TLE_batch_down").removeClass("TLE_batch_down_selected");
     var count = $(_this).parents(".TLE_getbtn").attr("data-count");
-    $("#TLE_batch_down" + count).addClass("TLE_batch_down_selected");
+    TLE.setConfig("TLE_aria2_selected_server", count)
   };
 
   TLE.down = function(_this, _do) {
@@ -285,6 +284,7 @@ TLE.exporter = {
   };
 
   TLE.bt_down = function(_this, _do) {
+    TLE.set_current_select_server(_this);
     var ck = document.getElementsByName("bt_list_ck");
     var files = [];
     $.each(ck, function(n, e) {
@@ -611,6 +611,7 @@ TLE.exporter = {
                             + exporter_anchors("TLE.batch_down")
                           + '</div>');
     });
+
     var _task_check_click = task_check_click;
     task_check_click = function() {
       _task_check_click();
@@ -629,12 +630,20 @@ TLE.exporter = {
     $('input[name=ck],input#ckbutton').click(task_check_click);
 
     //bt_down
-    $("#view_bt_list_nav_tpl").text($("#view_bt_list_nav_tpl").text().replace('取回本地</em></span></a>',
-          '取回本地</em></span></a>'
-          +'<a href="#" class="btn_m noit" title="批量导出" id="TLE_bt_down"><span><em class="icdwlocal">批量导出</em></span></a>'
-          +'<div id="TLE_bt_getbtn" class="TLE_getbtn" style="top: 30px; display:none;">'
-            + exporter_anchors("TLE.bt_down")
-          + '</div>'));
+
+    serverLists.reverse();
+    var btListNavTplText = '取回本地</em></span></a>';
+    serverLists.forEach(function(e, index){
+      var count = index;
+      var key = Object.keys(e)[0];
+      btListNavTplText += '<a href="#" id="TLE_bt_down' + count + '" data-count="' + count + '" title="导出' + key + '" class="TLE_bt_down btn_m noit"><span><em class="icdwlocal">导出' + key + '</em></span></a>'
+      + '<div id="TLE_bt_getbtn' + count + '" class="TLE_bt_getbtn TLE_getbtn" style="top: 30px; display:none;" data-count="' + count + '">'
+      + exporter_anchors("TLE.bt_down")
+      + '</div>';
+    });
+
+    $("#view_bt_list_nav_tpl").text($("#view_bt_list_nav_tpl").text().replace('取回本地</em></span></a>', btListNavTplText));
+
     $("#view_bt_list_tpl").text($("#view_bt_list_tpl").text().replace('ic_redownloca" title="">取回本地</a>',
         'ic_redownloca" title="">取回本地</a>'
         +'<div class="TLE_get_btnbox">'
@@ -650,11 +659,12 @@ TLE.exporter = {
     bt_view_nav = function() {
       _bt_view_nav();
       if ($("#view_bt_list_nav_down").hasClass("noit")) {
-        $("#TLE_bt_down").addClass("noit").unbind("click");
+        $(".TLE_bt_down").addClass("noit").unbind("click");
       } else {
-        $("#TLE_bt_down").removeClass("noit").unbind("click").click(function() {
-          $("#TLE_bt_getbtn").css("left", $("#TLE_bt_down").position().left);
-          $("#TLE_bt_getbtn").toggle();
+        $(".TLE_bt_down").removeClass("noit").unbind("click").click(function() {
+          var count = $(this).attr('data-count');
+          $("#TLE_bt_getbtn" + count).css("left", $(this).position().left);
+          $("#TLE_bt_getbtn" + count).toggle();
           return false;
         });
       };
@@ -760,9 +770,10 @@ TLE.exporter = {
     TLE.text_pop("wget download command", str);
   },
   "YAAW": function(todown) {
-    if (TLE.getConfig("TLE_aria2_jsonrpc")) {
+    var server_address = TLE.get_current_server_path();
+    if (server_address != undefined && server_address.length != 0) {
       TLE.tip("添加中...到YAAW界面查看是否添加成功");
-      var aria2 = new ARIA2(TLE.getConfig("TLE_aria2_jsonrpc"));
+      var aria2 = new ARIA2(server_address);
       $.each(todown.tasklist, function(n, task) {
         $.each(task.filelist, function(l, file) {
           if (!file.downurl) return;
