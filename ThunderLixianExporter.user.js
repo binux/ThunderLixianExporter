@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name       ThunderLixianExporter
 // @namespace  http://dynamic.cloud.vip.xunlei.com/
-// @version    0.78.2
+// @version    0.78.3
 // @description  export thunder lixian url to aria2/wget
 // @include      http://dynamic.cloud.vip.xunlei.com/user_task*
 // @include      http://lixian.vip.xunlei.com/lx3_task.html*
@@ -471,6 +471,7 @@ TLE.exporter = {
               +'<li>Path: <input type="text" id="TLE_aria2_jsonrpc" style="width: 350px" value="'+TLE.getConfig("TLE_aria2_jsonrpc")+'"/></li>'
             +'</ul>'
           +'$1'));
+    $(".n_vip").after('<div class="zh_info"><em onclick="setting.show()" class="sys_set"></em></div>');
     var _set_notice_submit = set_notice_submit;
     set_notice_submit = function(f) {
       _set_notice_submit(f);
