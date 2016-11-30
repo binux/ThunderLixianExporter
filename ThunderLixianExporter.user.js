@@ -35,6 +35,22 @@ TLE.exporter = {
       onHide: function() { $(document.body).click(); },
     });
   },
+
+  '导出链接': function(todown) {
+    //console.log(todown);
+    var str = '<ul style="max-height: 300px; overflow-y: scroll; overflow-x: hidden;">';
+    $.each(todown.tasklist, function(n, task) {
+      $.each(task.filelist, function(l, file) {
+        if (!file.downurl) return;
+        str += '<li><a href="'+TLE.url_rewrite(file.downurl, TLE.safe_title(file.title))+'" target="_blank">'+file.title+'</a></li>';
+      });
+    });
+    str += "</ul>";
+
+    var new_window = window.open('');
+    new_window.document.write(str);
+  },
+
   'Aria2': function(todown) {
     //console.log(todown);
     var str = "";
@@ -44,7 +60,7 @@ TLE.exporter = {
         var filepath = TLE.safe_title(file.title);
         if (task.tasktype == 0 && task.filelist.length > 1)
           filepath = TLE.safe_title(task.taskname) + "/" + TLE.safe_title(file.title.replace(/\\+\*?/g,"/"));
-        str += "aria2c -c -s10 -x10 --out "+TLE.escape_command(filepath)+" --header 'Cookie: gdriveid="+todown.gdriveid+";' '"+file.downurl+"'\n"; 
+        str += "aria2c -c -s10 -x10 --out "+TLE.escape_command(filepath)+" --header 'Cookie: gdriveid="+todown.gdriveid+";' '"+file.downurl+"'\n";
       });
     });
     TLE.text_pop("aria2 download command", str);
@@ -130,6 +146,34 @@ TLE.exporter = {
     TLE.file_pop("Eagleget导出文件下载(test)", JSON.stringify(ret), "eagleget.eg");
   },
 };
+
+//Shiftclick support
+//Required jquery&thickbox
+(function($) {
+    $.fn.shiftClick = function() {
+        var lastSelected;
+        var checkBoxes = $(this);
+
+        this.each(function() {
+            $(this).click(function(ev) {
+                if (ev.shiftKey) {
+                    var last = checkBoxes.index(lastSelected);
+                    var first = checkBoxes.index(this);
+
+                    var start = Math.min(first, last);
+                    var end = Math.max(first, last);
+
+                    var chk = lastSelected.checked;
+                    for (var i = start; i < end; i++) {
+                        checkBoxes[i].checked = chk;
+                    }
+                } else {
+                    lastSelected = this;
+                }
+            })
+        });
+    };
+})(jQuery);
 
 (function(TLE) {
   function get_taskinfo(p) {
@@ -355,7 +399,7 @@ TLE.exporter = {
   TLE.multiple_server_fix = function(url) {
     return "'"+url.replace("gdl", "'{gdl,dl.{f,g,h,i,twin}}'")+"'";
   }
-  
+
   function encode_utf8(s) {
     return unescape( encodeURIComponent( s ) );
   };
@@ -581,6 +625,9 @@ TLE.exporter = {
   };
 
   init();
+
+  $('input[type=checkbox]').shiftClick();
+
 })(TLE);
 
 var ARIA2 = (function() {
