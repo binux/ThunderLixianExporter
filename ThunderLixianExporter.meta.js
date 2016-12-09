@@ -9,5 +9,5 @@
 // @include      http://cloud.vip.xunlei.com/*
 // @run-at document-end
 // @copyright  2012+, Binux <root@binux.me>
-// @updateURL http://s.binux.me/TLE/master/ThunderLixianExporter.meta.js
+// @updateURL https://cdn.rawgit.com/binux/ThunderLixianExporter/master/ThunderLixianExporter.meta.js
 // ==/UserScript==
