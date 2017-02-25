@@ -580,7 +580,7 @@ TLE.exporter = {
         window.getSelection().removeAllRanges();
         e.stopPropagation();
         var checked = $('div.rw_list:has(input[value]:checked)').map(function(i, e) { return $(e).index('div.rw_list') }).get();
-        var myindex = $('.rw_list[taskid="'+id+'"]').index();
+        var myindex = $('.rw_list[taskid="'+id+'"]').index('div.rw_list');
         var from = checked.reduce(function(a, e) { return Math.abs(e-myindex) < Math.abs(a-myindex) ? e : a; }, checked[0]);
         if (from > myindex) {
           var tmp = from;
