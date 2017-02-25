@@ -1,14 +1,14 @@
 // ==UserScript==
 // @name       ThunderLixianExporter
 // @namespace  http://dynamic.cloud.vip.xunlei.com/
-// @version    0.78.3
+// @version    0.78.4
 // @description  export thunder lixian url to aria2/wget
 // @include      http://dynamic.cloud.vip.xunlei.com/user_task*
 // @include      http://lixian.vip.xunlei.com/lx3_task.html*
 // @include      http://jiayuan.xunlei.com/lxhome/lx3_task.html*
 // @include      http://cloud.vip.xunlei.com/*
 // @run-at document-end
-// @copyright  2012+, Binux <root@binux.me>
+// @copyright  2012~2017, Binux <root@binux.me>
 // @updateURL https://cdn.rawgit.com/binux/ThunderLixianExporter/master/ThunderLixianExporter.meta.js
 // ==/UserScript==
 
@@ -578,6 +578,42 @@ TLE.exporter = {
       $("div.TLE_p_getbtn, #TLE_batch_getbtn, #TLE_bt_getbtn").hide();
     });
     $("div.TLE_get_btnbox").click(function(e){e.stopPropagation();});
+
+    // support for shift group select
+    document.addEventListener('click', function(e) {
+      var that;
+      if ($(e.target).is('div.rw_list'))  {
+        that = $(e.target);
+      } else if ($(e.target).is('div.rw_list *'))  {
+        that = $(e.target).parents('div.rw_list');
+      } else {
+        return;
+      }
+      var id=that.attr('taskid');
+
+      if (e.button == 0 && e.shiftKey) {
+        window.getSelection().removeAllRanges();
+        e.stopPropagation();
+        var checked = $('div.rw_list:has(input[value]:checked)').map(function(i, e) { return $(e).index('div.rw_list') }).get();
+        var myindex = $('.rw_list[taskid="'+id+'"]').index();
+        var from = checked.reduce(function(a, e) { return Math.abs(e-myindex) < Math.abs(a-myindex) ? e : a; }, checked[0]);
+        if (from > myindex) {
+          var tmp = from;
+          from = myindex;
+          myindex = tmp;
+        }
+
+        $('div.rw_list:eq('+from+'), div.rw_list:gt('+from+'):lt('+(myindex-from)+')').each(function(i, e) {
+          var id = $(e).attr('taskid');
+          if(!in_array(id,task_nowcheck)){
+            task_nowcheck.push(id);
+          }
+          $("#input"+id).attr("checked","true");
+        });
+        task_check_click();
+        clickFun(e,that);
+      }
+    }, true);
   };
 
   init();
